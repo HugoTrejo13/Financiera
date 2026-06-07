@@ -1,8 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
 .venv/
-pycache/
-*.pyc
-build/
+env/
+venv/
+.env
+
+# Node
+node_modules/
 dist/
-*.spec
-.DS_Store
+dist-ssr/
+*.local
+
+# Editor
 .vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store

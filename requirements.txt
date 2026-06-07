@@ -1,8 +1,0 @@
-pyside6==6.7.2
-pyside6-addons==6.7.2
-shiboken6==6.7.2
-pandas>=2.2
-babel>=2.14
-numpy>=1.26
-pytz>=2024.1
-tzdata>=2024.1

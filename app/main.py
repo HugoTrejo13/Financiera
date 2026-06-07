@@ -1,4 +1,8 @@
-﻿import sys
+import sys
+import pathlib
+root_dir = pathlib.Path(__file__).resolve().parent.parent
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
 
 from PySide6.QtCore import QEasingCurve, QPoint, QSize, Qt, QPropertyAnimation
 from PySide6.QtGui import QAction
@@ -199,3 +203,15 @@ def run():
     win = MainWindow()
     win.show()
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    import os
+
+    try:
+        run()
+    except ImportError:
+        venv_py = root_dir / ".venv" / "bin" / "python"
+        if venv_py.exists() and sys.executable != str(venv_py):
+            os.execv(str(venv_py), [str(venv_py)] + sys.argv)
+        raise

@@ -1,92 +1,94 @@
-# Financiera
+# 🚀 Financiera
 
-Financiera es una aplicación web moderna Full-Stack diseñada para la gestión financiera personal. Permite a los usuarios administrar sus pasivos (Gestión de Deudas) y simular planes de pago e inversión de manera eficiente.
+¡Bienvenido/a a Financiera! Gestionar el dinero no debería ser un dolor de cabeza ni una tarea exclusiva de expertos. Este proyecto nació con un propósito claro: crear una herramienta digital, intuitiva y realmente efectiva para ayudarte a tomar el control de tus finanzas personales, simular inversiones inteligentes y liquidar deudas sin sorpresas fiscales.
 
-Actualmente, el proyecto utiliza una "Micro-Arquitectura" limpia y totalmente desacoplada entre el Backend y el Frontend, enfocada en la velocidad, el rendimiento y un diseño visual atractivo (Dark Mode).
+Diseñada originalmente como una aplicación de escritorio, esta plataforma evoluciona hacia una arquitectura web moderna para que tú y tu equipo puedan colaborar, mejorar y escalar su impacto desde cualquier navegador.
+
+## 🎯 ¿Cómo te ayuda esta App? (El Enfoque Humano)
+La mayoría de las herramientas financieras son confusas o aburridas. Financiera se enfoca en resolver problemas reales mediante tres pilares:
+
+- **Lobby de Entrada:** Una pantalla de bienvenida limpia y minimalista que te permite seleccionar tu idioma (Español/Inglés) antes de comenzar, preparándote para registrar tus datos en un entorno seguro y libre de distracciones.
+- **Simulador de Planes de Inversión:** Te permite proyectar cuánto dinero tendrás en el futuro. Lo mejor es que no solo calcula el interés compuesto básico, sino que desglosa de forma realista los impactos fiscales (como retenciones de ISR), mostrándote tus ganancias netas reales.
+- **Gestión Efectiva de Deudas:** Una sección diseñada para registrar tus créditos, tarjetas o préstamos. Te ayuda a visualizar el monto total, el saldo restante y el impacto de las tasas de interés (incluyendo el IVA sobre intereses cuando aplica), permitiéndote planificar pagos mensuales estratégicos para salir de deudas más rápido.
+
+## 🛠️ Arquitectura y Stack Tecnológico (El Enfoque Técnico)
+Para lograr que la aplicación sea rápida, segura y fácil de modificar, dividimos el sistema en dos partes independientes (arquitectura desacoplada). Aquí te explicamos qué hace cada componente en lenguaje sencillo:
+
+### Diagrama de Arquitectura Visual
+```mermaid
+graph TD
+    subgraph Frontend ["📺 Frontend (React + Vite)"]
+        UI[Interfaz de Usuario]
+        Lobby[Lobby / Idiomas]
+        Debts[Gestión de Deudas]
+        Invest[Simulador de Inversiones]
+        UI --> Lobby
+        UI --> Debts
+        UI --> Invest
+    end
+
+    subgraph Backend ["🧠 Backend (FastAPI)"]
+        API[API Endpoints]
+        Auth[Autenticación JWT]
+        Logic[Lógica Matemática y Fiscal]
+        ORM[SQLAlchemy ORM]
+        API --> Auth
+        API --> Logic
+        Logic --> ORM
+    end
+
+    subgraph Database ["🔒 Bóveda de Datos"]
+        DB[(PostgreSQL - Neon/Supabase)]
+    end
+
+    Frontend -- "Peticiones HTTP (Axios)" --> API
+    ORM -- "Consultas Seguras" --> DB
+```
+
+### 📺 Frontend (La Interfaz Visual)
+Es todo lo que el usuario ve y toca en el navegador.
+- **React + TypeScript:** Usamos React para que la página sea ultra-reactiva (se actualice al instante sin recargar la pantalla). TypeScript nos asegura que el código no tenga errores de datos al escribirlo.
+- **Tailwind CSS & Shadcn/ui:** Herramientas de diseño que nos permiten aplicar estilos visuales modernos, bordes redondeados, modos oscuros (Dark Mode) y transiciones fluidas directamente en los componentes de forma ágil.
+- **Lucide React:** Iconografía limpia y ligera en formato vectorial (SVG) para que los botones y paneles se vean nítidos en cualquier pantalla (Mac, iPhone, Monitor 4K).
+
+### 🧠 Backend (El Cerebro Matemático)
+Es el servidor oculto que procesa la lógica, hace los cálculos de impuestos y protege los datos.
+- **FastAPI (Python):** Un framework de alta velocidad encargado de recibir las peticiones del Frontend, hacer las operaciones matemáticas pesadas (fórmulas de inversión/deudas) y devolver los resultados en segundos de forma segura.
+- **SQLAlchemy & Alembic:** El mapeador (ORM) que nos permite hablar con la base de datos usando código Python seguro, protegiendo el sistema de hackeos (como inyecciones SQL), mientras que Alembic controla el historial de cambios en las tablas.
+
+### 🔒 Base de Datos y Seguridad (La Bóveda)
+- **PostgreSQL (Neon / Supabase):** Una base de datos relacional de nivel empresarial. Aquí se guardan los usuarios, las inversiones y las deudas de forma organizada y permanente.
+- **JWT (JSON Web Tokens):** Sistema de llaves digitales. Cuando inicias sesión, el servidor te da un token seguro que tu navegador usará para demostrar quién eres en cada petición, protegiendo tu información financiera sensible.
 
 ---
 
-## 🛠️ Stack Tecnológico
+## 🚀 Guía de Inicio Rápido (Local en macOS)
+Si eres colaborador del proyecto, sigue estos pasos en tu terminal para levantar el entorno de desarrollo en tu Mac:
 
-El proyecto está construido utilizando las siguientes herramientas modernas:
+### 1. Clonar el Repositorio
+```bash
+git clone https://github.com/HugoTrejo13/Financiera.git
+cd Financiera
+```
 
-### Frontend (Interfaz Gráfica)
-
-_Ubicación: `/frontend`_
-
-- **React 19:** Biblioteca principal para la construcción de interfaces de usuario.
-- **TypeScript:** Tipado estático para un código más robusto y seguro.
-- **Vite:** Entorno de desarrollo ultrarrápido y empaquetador (bundler).
-- **Tailwind CSS v4:** Framework de CSS utilitario para un estilizado rápido, moderno y responsivo (implementado de forma nativa sin exceso de componentes).
-- **Axios:** Cliente HTTP para conectar con la API del backend.
-- **Lucide React:** Colección de iconos vectoriales hermosos y ligeros.
-
-### Backend (API REST)
-
-_Ubicación: `/backend`_
-
-- **FastAPI:** Framework web moderno y ultrarrápido para construir APIs con Python.
-- **SQLAlchemy (ORM):** Mapeo objeto-relacional para interactuar con la base de datos de forma segura.
-- **Alembic:** Herramienta para manejar las migraciones de la base de datos.
-- **Pydantic v2:** Validación de datos automatizada y tipado estricto.
-- **SQLite:** Base de datos relacional ligera (fácilmente migrable a PostgreSQL/Supabase en el futuro).
-
----
-
-## 🚀 Cómo ejecutar el proyecto en local
-
-Para visualizar y editar la aplicación en tu máquina local, debes levantar ambos servidores de forma simultánea en la terminal.
-
-### 1. Iniciar el Backend (API)
-
-Abre una terminal y ejecuta:
-
+### 2. Encender el Backend (Servidor)
+Abre la terminal y ejecuta:
 ```bash
 cd backend
-../.venv/bin/uvicorn app.main:app --reload
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
 ```
+> [!NOTE]
+> Accede a la documentación automática de las rutas de tu API en: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-_El backend estará disponible en `http://localhost:8000`. Puedes ver la documentación interactiva de la API (Swagger UI) ingresando a `http://localhost:8000/docs`._
-
-### 2. Iniciar el Frontend (Web)
-
-Abre una nueva pestaña en la terminal y ejecuta:
-
+### 3. Encender el Frontend (Interfaz Web)
+Abre una nueva pestaña de la Terminal y ejecuta:
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
-
-_La aplicación web estará disponible en `http://localhost:5173`. Ábrela en tu navegador para interactuar con el sistema._
-
----
-
-## 🏗️ Arquitectura de Archivos
-
-La aplicación ha sido optimizada para mantener el menor número de archivos posibles ("cero boilerplate"):
-
-```text
-Financiera/
-├── backend/
-│   ├── app/
-│   │   ├── main.py        # Corazón de la API (Rutas y Pydantic)
-│   │   ├── database.py    # Conexión SQLAlchemy y variables de entorno
-│   │   └── models.py      # Tablas de base de datos
-│   ├── alembic/           # Migraciones de base de datos
-│   └── financiera.db      # Base de datos local
-│
-└── frontend/
-    ├── src/
-    │   ├── components/
-    │   │   └── DebtsView.tsx # Vista interactiva de deudas (Form + Tabla)
-    │   ├── lib/
-    │   │   └── api.ts        # Cliente Axios
-    │   ├── App.tsx           # Punto de entrada de la UI
-    │   └── index.css         # Configuración global y colores de Tailwind
-    ├── package.json
-    └── vite.config.ts
-```
-
----
-
-_Este documento se mantendrá actualizado conforme se agreguen nuevos módulos (como los Planes de Inversión) o se integren nuevos servicios externos (Auth, PostgreSQL en la nube)._
+> [!TIP]
+> Abre tu navegador en: [http://localhost:5173](http://localhost:5173) para empezar a interactuar con la plataforma.

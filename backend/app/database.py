@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api"
     # Por defecto SQLite si no se define DATABASE_URL
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./financiera.db")
+    NEWS_API_KEY: str = ""
 
     class Config:
         env_file = ".env"

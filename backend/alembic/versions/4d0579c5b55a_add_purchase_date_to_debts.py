@@ -1,8 +1,8 @@
-"""Initial schema
+"""Add purchase_date to debts
 
-Revision ID: 8233df7973fb
+Revision ID: 4d0579c5b55a
 Revises: 
-Create Date: 2026-06-06 19:20:35.406362
+Create Date: 2026-06-07 17:13:29.564338
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '8233df7973fb'
+revision: str = '4d0579c5b55a'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -33,11 +33,15 @@ def upgrade() -> None:
     op.create_table('debts',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('description', sa.String(), nullable=False),
+    sa.Column('purchase_date', sa.String(), nullable=False),
+    sa.Column('payment_type', sa.String(), nullable=False),
+    sa.Column('price', sa.Float(), nullable=False),
+    sa.Column('months', sa.Integer(), nullable=True),
+    sa.Column('has_interest', sa.Boolean(), nullable=True),
+    sa.Column('interest_rate', sa.Float(), nullable=True),
     sa.Column('total_amount', sa.Float(), nullable=False),
     sa.Column('remaining_amount', sa.Float(), nullable=False),
-    sa.Column('interest_rate', sa.Float(), nullable=False),
     sa.Column('monthly_payment', sa.Float(), nullable=False),
-    sa.Column('due_date', sa.String(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('owner_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),

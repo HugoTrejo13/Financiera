@@ -21,10 +21,12 @@ app.add_middleware(
 # --- Schemas ---
 class DebtBase(BaseModel):
     description: str = Field(..., min_length=1)
-    total_amount: float = Field(..., gt=0)
-    interest_rate: float = Field(..., ge=0)
-    monthly_payment: float = Field(..., gt=0)
-    due_date: str
+    purchase_date: str = Field(..., min_length=1)  # YYYY-MM-DD
+    payment_type: str = Field(..., pattern="^(contado|meses)$")
+    price: float = Field(..., gt=0)
+    months: int | None = Field(default=None, gt=0)
+    has_interest: bool | None = Field(default=None)
+    interest_rate: float = Field(default=0.0, ge=0)
 
 class DebtCreate(DebtBase):
     pass
@@ -34,11 +36,12 @@ class DebtUpdate(BaseModel):
     remaining_amount: float | None = None
     interest_rate: float | None = None
     monthly_payment: float | None = None
-    due_date: str | None = None
 
 class DebtResponse(DebtBase):
     id: int
+    total_amount: float
     remaining_amount: float
+    monthly_payment: float
 
     class Config:
         from_attributes = True
@@ -58,9 +61,23 @@ def get_debts(db: Session = Depends(get_db), user_id: int = Depends(get_current_
 
 @app.post("/api/debts/", response_model=DebtResponse, tags=["Debts"])
 def create_debt(debt: DebtCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    if debt.payment_type == "contado":
+        total_amount = debt.price
+        monthly_payment = 0.0
+    else:
+        if debt.has_interest and debt.interest_rate > 0:
+            total_amount = debt.price + (debt.price * (debt.interest_rate / 100.0))
+        else:
+            total_amount = debt.price
+            
+        months = debt.months if (debt.months and debt.months > 0) else 1
+        monthly_payment = total_amount / months
+
     db_debt = models.Debt(
         **debt.model_dump(),
-        remaining_amount=debt.total_amount,
+        total_amount=total_amount,
+        remaining_amount=total_amount,
+        monthly_payment=monthly_payment,
         owner_id=user_id
     )
     db.add(db_debt)
@@ -91,3 +108,10 @@ def delete_debt(debt_id: int, db: Session = Depends(get_db), user_id: int = Depe
     db.delete(db_debt)
     db.commit()
     return {"message": "Deuda eliminada"}
+
+# ─── Noticias ────────────────────────────────────────────────────────────────
+@app.get("/api/news/", tags=["News"])
+async def get_news(page: int = 1, page_size: int = 6, q: str | None = None):
+    """Proxy de noticias financieras con caché de 30 min."""
+    from app.news import fetch_news
+    return await fetch_news(page=page, page_size=page_size, q=q)

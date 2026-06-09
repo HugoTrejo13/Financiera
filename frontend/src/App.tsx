@@ -37,7 +37,7 @@ function App() {
       <div className="min-h-screen bg-background flex flex-col">
         {/* Navbar Interno */}
         <header className="w-full bg-card border-b border-border h-16 flex items-center relative z-50 shadow-sm">
-          <div className="max-w-6xl mx-auto w-full px-4 flex items-center gap-4">
+          <div className="w-full px-4 flex items-center gap-4">
             <button onClick={() => setCurrentView('lobby')} className="text-muted-foreground hover:bg-muted hover:text-foreground p-2 rounded-full transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </button>

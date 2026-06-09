@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Wallet, CalendarDays, Filter } from 'lucide-react';
 import api from '../lib/api';
+import DebtDetailsPanel from './DebtDetailsPanel';
 
 interface Debt {
   id: number;
@@ -31,6 +32,7 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
   const [debts, setDebts] = useState<Debt[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Debt | null>(null);
+  const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
 
   // Form states
   const [paymentType, setPaymentType] = useState<'contado' | 'meses' | ''>('');
@@ -38,6 +40,7 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
   const [priceStr, setPriceStr] = useState<string>('');
   const [currency, setCurrency] = useState<'mxn' | 'usd'>('mxn');
   const [exchangeRateStr, setExchangeRateStr] = useState<string>('');
+  const [isImpulsive, setIsImpulsive] = useState<boolean | null>(null);
 
   // Filter states
   const [filterMode, setFilterMode] = useState<'none' | 'range'>('none');
@@ -175,6 +178,7 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
       setPriceStr('');
       setCurrency('mxn');
       setExchangeRateStr('');
+      setIsImpulsive(null);
       fetchDebts();
     } catch (err) {
       console.error('Error creating debt', err);
@@ -270,20 +274,38 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
               <input id="desc" name="description" type="text" required placeholder={t.descPlaceholder} className={inputClass} />
             </div>
 
-            {/* Fecha de compra */}
-            <div>
-              <label htmlFor="purchase_date" className={labelClass}>{t.dateLabel}</label>
-              <div className="relative">
-                <CalendarDays
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => dateInputRef.current?.showPicker()}
-                />
-                <input
-                  ref={dateInputRef}
-                  id="purchase_date" name="purchase_date" type="date" required
-                  className={inputClass + " pl-9"}
-                  max={new Date().toISOString().split('T')[0]}
-                />
+            {/* Fila: Fecha y Compra Impulsiva */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Fecha de compra */}
+              <div>
+                <label htmlFor="purchase_date" className={labelClass}>{t.dateLabel}</label>
+                <div className="relative">
+                  <CalendarDays
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => dateInputRef.current?.showPicker()}
+                  />
+                  <input
+                    ref={dateInputRef}
+                    id="purchase_date" name="purchase_date" type="date" required
+                    className={inputClass + " pl-9"}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+              </div>
+
+              {/* Compra Impulsiva */}
+              <div>
+                <label className={labelClass}>¿Compra impulsiva?</label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <button type="button" onClick={() => setIsImpulsive(true)}
+                    className={`py-2 px-3 text-sm font-medium rounded-md border transition-all ${isImpulsive === true ? 'bg-white text-black border-white shadow-sm' : 'bg-transparent border-input text-muted-foreground hover:bg-muted'}`}>
+                    Sí
+                  </button>
+                  <button type="button" onClick={() => setIsImpulsive(false)}
+                    className={`py-2 px-3 text-sm font-medium rounded-md border transition-all ${isImpulsive === false ? 'bg-white text-black border-white shadow-sm' : 'bg-transparent border-input text-muted-foreground hover:bg-muted'}`}>
+                    No
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -489,7 +511,7 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
               <table className="w-full caption-bottom text-sm">
                 <thead>
                   <tr className="border-b bg-muted/30">
-                    <th className="h-11 px-4 text-center align-middle font-semibold text-xs uppercase tracking-wide text-muted-foreground">{t.colDesc}</th>
+                    <th className="h-11 px-4 text-left align-middle font-semibold text-xs uppercase tracking-wide text-muted-foreground">{t.colDesc}</th>
                     <th className="h-11 px-4 text-center align-middle font-semibold text-xs uppercase tracking-wide text-muted-foreground">{t.colDate}</th>
                     <th className="h-11 px-4 text-center align-middle font-semibold text-xs uppercase tracking-wide text-muted-foreground">{t.colType}</th>
                     <th className="h-11 px-4 text-center align-middle font-semibold text-xs uppercase tracking-wide text-muted-foreground">{t.colPrice}</th>
@@ -499,9 +521,13 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
                 </thead>
                 <tbody className="[&_tr:last-child]:border-0">
                   {filteredDebts.map((debt) => (
-                    <tr key={debt.id} className="border-b transition-colors hover:bg-muted/50">
-                      <td className="px-4 py-3 align-middle font-medium text-center">
-                        <span className="block break-words max-w-[200px] mx-auto">{debt.description}</span>
+                    <tr 
+                      key={debt.id} 
+                      onClick={() => setSelectedDebt(debt)}
+                      className="border-b transition-colors hover:bg-muted/60 cursor-pointer"
+                    >
+                      <td className="px-4 py-3 align-middle font-medium text-left">
+                        <span className="block break-words max-w-[200px]">{debt.description}</span>
                       </td>
                       <td className="px-4 py-3 align-middle text-center text-muted-foreground text-xs whitespace-nowrap">
                         {fmtDate(debt.purchase_date)}
@@ -518,8 +544,13 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
                         ${getEffectiveCost(debt).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="px-4 py-3 align-middle text-center">
-                        <button onClick={() => handleDelete(debt)}
-                          className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-destructive/10 text-destructive h-9 w-9 cursor-pointer">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(debt);
+                          }}
+                          className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-destructive/10 text-destructive h-9 w-9 cursor-pointer"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </td>
@@ -531,6 +562,15 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
           )}
         </div>
       </div>
+
+      {/* Panel de Detalles de Deuda */}
+      {selectedDebt && (
+        <DebtDetailsPanel 
+          debt={selectedDebt} 
+          onClose={() => setSelectedDebt(null)} 
+        />
+      )}
+
     </div>
   );
 }

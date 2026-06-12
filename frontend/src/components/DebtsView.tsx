@@ -39,7 +39,7 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
   const [hasInterest, setHasInterest] = useState<'si' | 'no' | ''>('');
   const [priceStr, setPriceStr] = useState<string>('');
   const [currency, setCurrency] = useState<'mxn' | 'usd'>('mxn');
-  const [exchangeRateStr, setExchangeRateStr] = useState<string>('');
+  const [currentExchangeRate, setCurrentExchangeRate] = useState<number | null>(null);
   const [isImpulsive, setIsImpulsive] = useState<boolean | null>(null);
 
   // Filter states
@@ -68,9 +68,6 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setPriceStr(formatWithCommas(e.target.value));
-
-  const handleExchangeRateChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setExchangeRateStr(formatWithCommas(e.target.value));
 
   const t = {
     headerTitle: "GESTIÓN DE GASTOS",
@@ -125,7 +122,22 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
     }
   };
 
-  useEffect(() => { fetchDebts(); }, []);
+  const fetchExchangeRate = async () => {
+    try {
+      const res = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=MXN');
+      const data = await res.json();
+      if (data && data.rates && data.rates.MXN) {
+        setCurrentExchangeRate(data.rates.MXN);
+      }
+    } catch (err) {
+      console.error('Error fetching exchange rate:', err);
+    }
+  };
+
+  useEffect(() => { 
+    fetchDebts(); 
+    fetchExchangeRate();
+  }, []);
 
   // Filtered debts
   const filteredDebts = useMemo(() => {
@@ -161,7 +173,7 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
         price: (() => {
           const rawPrice = parseFloat(priceStr.replace(/,/g, ''));
           if (currency === 'usd') {
-            const rate = parseFloat(exchangeRateStr.replace(/,/g, ''));
+            const rate = currentExchangeRate || 1;
             return rawPrice * rate;
           }
           return rawPrice;
@@ -177,7 +189,6 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
       setHasInterest('');
       setPriceStr('');
       setCurrency('mxn');
-      setExchangeRateStr('');
       setIsImpulsive(null);
       fetchDebts();
     } catch (err) {
@@ -347,10 +358,9 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
                 </div>
                 {currency === 'usd' && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label htmlFor="exchangeRate" className={labelClass}>{t.exchangeRateLabel}</label>
-                    <input id="exchangeRate" name="exchangeRate" type="text" required
-                      placeholder={t.exchangeRatePlaceholder} className={inputClass}
-                      value={exchangeRateStr} onChange={handleExchangeRateChange} />
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {currentExchangeRate ? `1 USD = $${currentExchangeRate.toFixed(2)} MXN` : 'Cargando tipo de cambio...'}
+                    </p>
                   </div>
                 )}
               </div>
@@ -379,10 +389,9 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
                 </div>
                 {currency === 'usd' && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label htmlFor="exchangeRate" className={labelClass}>{t.exchangeRateLabel}</label>
-                    <input id="exchangeRate" name="exchangeRate" type="text" required
-                      placeholder={t.exchangeRatePlaceholder} className={inputClass}
-                      value={exchangeRateStr} onChange={handleExchangeRateChange} />
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {currentExchangeRate ? `1 USD = $${currentExchangeRate.toFixed(2)} MXN` : 'Cargando tipo de cambio...'}
+                    </p>
                   </div>
                 )}
                 <div>

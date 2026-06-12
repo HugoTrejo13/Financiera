@@ -7,7 +7,7 @@
   [![GitHub](https://img.shields.io/badge/GitHub-HugoTrejo13-181717?style=flat-square&logo=github)](#)
 </div>
 
-![Demo](./assets/demo.png)
+![Demo](./assets/demo.jpeg)
 
 ## 📖 About
 Financiera is a personal finance application built to help users take control of their expenses and debts without dealing with confusing spreadsheets. It automatically calculates interest rates, builds payment timelines for installment purchases, and fetches real-time currency exchange rates. It solves the problem of tracking complex liabilities by providing a clean, centralized, and visual dashboard.

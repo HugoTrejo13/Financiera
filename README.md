@@ -1,146 +1,70 @@
-# Financiera
+<div align="center">
+  <h1>Financiera</h1>
+  <p>A smart personal finance tracker with automated currency conversion and amortization schedules.</p>
 
-¡Bienvenido a Financiera! Gestionar el dinero no debería ser un dolor de cabeza ni una tarea exclusiva de expertos. Este proyecto nació con un propósito claro: crear una herramienta digital, intuitiva y realmente efectiva para ayudarte a tomar el control de tus finanzas personales.
+  [![Status](https://img.shields.io/badge/Status-In%20development-orange?style=flat-square)](#)
+  [![License](https://img.shields.io/badge/License-None-lightgrey?style=flat-square)](#)
+  [![GitHub](https://img.shields.io/badge/GitHub-HugoTrejo13-181717?style=flat-square&logo=github)](#)
+</div>
 
-Diseñada con estándares de la industria, interfaz premium y arquitectura escalable.
+![Demo](./assets/demo.png)
 
----
+## 📖 About
+Financiera is a personal finance application built to help users take control of their expenses and debts without dealing with confusing spreadsheets. It automatically calculates interest rates, builds payment timelines for installment purchases, and fetches real-time currency exchange rates. It solves the problem of tracking complex liabilities by providing a clean, centralized, and visual dashboard.
 
-## 🌟 Características Principales
+## ✨ Features
+- **Track** cash purchases and installment debts (with or without interest).
+- **Calculate** automatic amortization schedules and timeline progress for active debts.
+- **Convert** USD to MXN dynamically using the real-time Frankfurter API.
+- **Edit** existing financial records seamlessly through a robust centered modal interface.
+- **Read** filtered real-time economic and financial news directly from the dashboard.
 
-La mayoría de las herramientas financieras son confusas o aburridas. Financiera se enfoca en resolver problemas reales mediante una Experiencia de Usuario (UX) de primer nivel:
+## 🛠 Tech Stack
 
-- **Lobby Minimalista:** Pantalla de bienvenida limpia con integración de **Dark Mode** (Modo Oscuro) persistente en el dispositivo del usuario.
-- **Mega-Menú de Navegación:** Navegación interna estilo "Google Developers" con paneles desplegables amplios para agilizar la interacción.
-- **Gestión Efectiva de Deudas:** Registra tus créditos, compras a meses (con o sin intereses) o de contado. Soporte para múltiples divisas (MXN/USD).
-- **Panel Inteligente de Detalles (Master-Detail):** Al hacer clic en una compra, un elegante panel lateral deslizable (Slide-over) calcula en tiempo real:
-  - Los meses transcurridos y el porcentaje de progreso.
-  - El desglose matemático entre el capital real y los intereses generados.
-  - El **calendario de amortización** (línea de tiempo de pagos).
-- **Noticias Financieras en Tiempo Real:** Sección con filtro inteligente de noticias económicas relevantes, obtenidas mediante un proxy en nuestro backend.
+**Frontend**  
+![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-B73BFE?style=flat-square&logo=vite&logoColor=FFD62E)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)
 
----
+**Backend**  
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-07405E?style=flat-square&logo=sqlite&logoColor=white)
 
-## 🏗 Arquitectura y Stack Tecnológico
+## 🚀 Getting Started
 
-Para lograr que la aplicación sea rápida, segura y fácil de modificar, usamos una **arquitectura desacoplada (Frontend / Backend)**.
+### Prerequisites
+- Node.js (v18+)
+- Python (3.9+)
 
-### Diagrama de Arquitectura de Alto Nivel
+### Installation
 
-```mermaid
-graph TD
-    subgraph Frontend ["🖥 Frontend (React + Vite + Tailwind)"]
-        UI[Interfaz de Usuario]
-        Theme[Gestor Dark Mode]
-        Nav[Mega-Menu Router]
-        Debts[Gestión de Deudas]
-        NewsUI[Feed de Noticias]
-        Details[Panel de Amortización]
-        
-        UI --> Theme
-        UI --> Nav
-        Nav --> Debts
-        Nav --> NewsUI
-        Debts --> Details
-    end
-
-    subgraph Backend ["⚙️ Backend (FastAPI + Python)"]
-        API[API Endpoints]
-        NewsProxy[News API Proxy]
-        Logic[Lógica de Negocio]
-        ORM[SQLAlchemy ORM]
-        
-        API --> Logic
-        API --> NewsProxy
-        Logic --> ORM
-    end
-
-    subgraph Database ["🔒 Bóveda de Datos (SQLite/PostgreSQL)"]
-        DB[(BBDD Relacional)]
-    end
-
-    Frontend -- "Peticiones HTTP (Axios)" --> API
-    ORM -- "Consultas Seguras" --> DB
-```
-
-### Tecnologías Clave:
-- **Frontend:** React, TypeScript, Vite, Tailwind CSS, Lucide React.
-- **Backend:** Python, FastAPI, SQLAlchemy, Alembic (Migraciones).
-- **Base de Datos:** SQLite (Desarrollo) / PostgreSQL (Producción).
-
----
-
-## 🔄 Flujos de Usuario (User Flows)
-
-### Flujo 1: Creación de Nueva Deuda
-El usuario tiene una experiencia fluida al registrar una nueva compra, con el formulario adaptándose a sus respuestas dinámicamente.
-
-```mermaid
-sequenceDiagram
-    participant User as Usuario
-    participant UI as Frontend (React)
-    participant API as Backend (FastAPI)
-    participant DB as Base de Datos
-    
-    User->>UI: Ingresa descripción y fecha
-    User->>UI: Selecciona "Pago a Meses"
-    UI-->>User: Muestra opciones de meses e intereses
-    User->>UI: Llena meses (ej. 12) e Interés (ej. 15%)
-    User->>UI: Clic en "Añadir Compra"
-    UI->>API: POST /api/debts/ (JSON Data)
-    API->>DB: Inserción Segura (ORM)
-    DB-->>API: Confirmación de guardado
-    API-->>UI: 200 OK + Objeto Deuda
-    UI-->>User: Limpia formulario y actualiza la tabla
-```
-
-### Flujo 2: Panel Inteligente de Amortización (Slide-over)
-Una de las funcionalidades más potentes es el cálculo en vivo sin sobrecargar la base de datos.
-
-```mermaid
-flowchart LR
-    A[El usuario hace clic en una fila de la tabla] --> B[React activa 'selectedDebt']
-    B --> C{¿Es deuda a meses?}
-    C -- Sí --> D[El Frontend lee 'purchase_date']
-    D --> E[Calcula meses transcurridos al día de hoy]
-    E --> F[Genera Línea de Tiempo de Pagos]
-    F --> G[Dibuja Barra de Progreso y Desglose Financiero]
-    C -- No --> H[Muestra resumen simplificado]
-    G --> I[Se despliega el Panel Lateral (Slide-over) con animaciones CSS]
-    H --> I
-```
-
----
-
-## 🚀 Guía de Inicio Rápido
-
-Si eres colaborador del proyecto, sigue estos pasos en tu terminal para levantar el entorno de desarrollo en tu Mac:
-
-### 1. Clonar el Repositorio
 ```bash
+# Clone the repository
 git clone https://github.com/HugoTrejo13/Financiera.git
 cd Financiera
-```
 
-### 2. Encender el Backend (Servidor)
-Abre la terminal y ejecuta:
-```bash
+# Setup Backend
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
-```
-> [!NOTE]  
-> Accede a la documentación automática de las rutas de tu API en: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### 3. Encender el Frontend (Interfaz Web)
-Abre una **nueva pestaña** de la Terminal y ejecuta:
-```bash
-cd frontend
+# Setup Frontend
+cd ../frontend
 npm install
 npm run dev
 ```
 
-> [!TIP]  
-> Abre tu navegador en **http://localhost:5173** para empezar a interactuar con la plataforma en modo desarrollo (HMR activado).
+### Usage
+```bash
+# Open your browser and navigate to the frontend port (usually 5173).
+# Click on "Nueva compra", select "Dólar (USD)" and watch the exchange rate auto-fill.
+```
+
+## 📬 Contact
+**Hugo Trejo**  
+[![GitHub](https://img.shields.io/badge/GitHub-HugoTrejo13-181717?style=flat-square&logo=github)](https://github.com/HugoTrejo13)

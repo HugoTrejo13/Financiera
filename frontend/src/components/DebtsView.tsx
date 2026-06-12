@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Wallet, CalendarDays, Filter } from 'lucide-react';
 import api from '../lib/api';
-import DebtDetailsPanel from './DebtDetailsPanel';
+import DebtDetailsModal from './DebtDetailsModal';
 
 interface Debt {
   id: number;
@@ -572,11 +572,15 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
         </div>
       </div>
 
-      {/* Panel de Detalles de Deuda */}
+      {/* Modal de Detalles y Edición de Deuda */}
       {selectedDebt && (
-        <DebtDetailsPanel 
+        <DebtDetailsModal 
           debt={selectedDebt} 
           onClose={() => setSelectedDebt(null)} 
+          onUpdated={() => {
+            fetchDebts();
+            setSelectedDebt(null); // Opcional: cierra el modal tras guardar, o puedes dejarlo abierto con los nuevos datos si actualizamos selectedDebt. Para simplificar, lo cerramos y recargamos.
+          }}
         />
       )}
 

@@ -309,11 +309,11 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
                 <label className={labelClass}>¿Compra impulsiva?</label>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   <button type="button" onClick={() => setIsImpulsive(true)}
-                    className={`py-2 px-3 text-sm font-medium rounded-md border transition-all ${isImpulsive === true ? 'bg-white text-black border-white shadow-sm' : 'bg-transparent border-input text-muted-foreground hover:bg-muted'}`}>
+                    className={`py-2 px-3 text-sm font-medium rounded-md border transition-all ${isImpulsive === true ? 'bg-primary text-primary-foreground border-primary shadow-sm' : 'bg-transparent border-input text-muted-foreground hover:bg-muted'}`}>
                     Sí
                   </button>
                   <button type="button" onClick={() => setIsImpulsive(false)}
-                    className={`py-2 px-3 text-sm font-medium rounded-md border transition-all ${isImpulsive === false ? 'bg-white text-black border-white shadow-sm' : 'bg-transparent border-input text-muted-foreground hover:bg-muted'}`}>
+                    className={`py-2 px-3 text-sm font-medium rounded-md border transition-all ${isImpulsive === false ? 'bg-primary text-primary-foreground border-primary shadow-sm' : 'bg-transparent border-input text-muted-foreground hover:bg-muted'}`}>
                     No
                   </button>
                 </div>

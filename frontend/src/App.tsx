@@ -62,10 +62,10 @@ function App() {
           {/* Mega Menú (Dropdown Panel estilo Google) */}
           {isMenuOpen && (
             <div className="absolute top-16 left-0 w-full bg-card border-b border-border shadow-lg z-40 animate-in slide-in-from-top-2 fade-in duration-200">
-              <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="flex flex-col md:flex-row justify-center gap-8 px-4 py-8">
                 
                 {/* Columna 1 */}
-                <div>
+                <div className="w-full md:w-80">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Finanzas Personales</h3>
                   <button 
                     onClick={() => { setCurrentView('debts'); setIsMenuOpen(false); }}
@@ -77,7 +77,7 @@ function App() {
                 </div>
 
                 {/* Columna 2 */}
-                <div>
+                <div className="w-full md:w-80">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Créditos</h3>
                   <div className="space-y-2">
                     <button 
@@ -94,15 +94,6 @@ function App() {
                       Crédito Automotriz
                       <p className="text-xs text-muted-foreground mt-1 font-normal">Calcula mensualidades de tu próximo auto.</p>
                     </button>
-                  </div>
-                </div>
-
-                {/* Columna 3 (Futuro) */}
-                <div>
-                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Herramientas Pro</h3>
-                  <div className="p-3 rounded-lg border border-dashed border-border text-muted-foreground">
-                    <p className="text-sm font-medium mb-1">Calculadora ISR</p>
-                    <p className="text-xs">Próximamente disponible.</p>
                   </div>
                 </div>
 

@@ -172,7 +172,7 @@ function App() {
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight mb-4">
           <span className="text-primary">Controla tus gastos,</span>
           <br />
-          <span className="text-foreground">controla tu vida.</span>
+          <span className="text-foreground">controla a tachi.</span>
         </h1>
 
         {/* Subtítulo */}

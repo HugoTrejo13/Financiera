@@ -370,31 +370,6 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
             {paymentType === 'meses' && (
               <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-2">
                 <div>
-                  <label htmlFor="price" className={labelClass}>{t.priceLabel}</label>
-                  <input id="price" name="price" type="text" required placeholder="0.00"
-                    className={inputClass} value={priceStr} onChange={handlePriceChange} />
-                </div>
-                <div>
-                  <label className={labelClass}>{t.currencyLabel}</label>
-                  <div className="grid grid-cols-2 gap-3 mt-2">
-                    <button type="button" onClick={() => setCurrency('mxn')}
-                      className={`py-2 px-3 text-sm font-medium rounded-md border transition-all flex items-center justify-center gap-1.5 ${currency === 'mxn' ? 'bg-green-700/80 text-white border-green-600 shadow-sm' : 'bg-transparent border-input hover:bg-muted'}`}>
-                      🇲🇽 {t.currencyMXN}
-                    </button>
-                    <button type="button" onClick={() => setCurrency('usd')}
-                      className={`py-2 px-3 text-sm font-medium rounded-md border transition-all flex items-center justify-center gap-1.5 ${currency === 'usd' ? 'bg-blue-700/80 text-white border-blue-600 shadow-sm' : 'bg-transparent border-input hover:bg-muted'}`}>
-                      🇺🇸 {t.currencyUSD}
-                    </button>
-                  </div>
-                </div>
-                {currency === 'usd' && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {currentExchangeRate ? `1 USD = $${currentExchangeRate.toFixed(2)} MXN` : 'Cargando tipo de cambio...'}
-                    </p>
-                  </div>
-                )}
-                <div>
                   <label className={labelClass}>{t.interestTypeLabel}</label>
                   <div className="grid grid-cols-2 gap-3 mt-2">
                     <button type="button" onClick={() => setHasInterest('no')}
@@ -407,25 +382,56 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
                     </button>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="months" className={labelClass}>{t.monthsLabel}</label>
-                    <input id="months" name="months" type="number" required min="1" max="24" step="1"
-                      placeholder="Ej. 12 (máx. 24)" className={inputClass}
-                      onChange={(e) => {
-                        const v = parseInt(e.target.value);
-                        if (v > 24) e.target.value = '24';
-                        if (v < 1 && e.target.value !== '') e.target.value = '1';
-                      }}
-                    />
-                  </div>
-                  {hasInterest === 'si' && (
-                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                      <label htmlFor="interestRate" className={labelClass}>{t.interestLabel}</label>
-                      <input id="interestRate" name="interestRate" type="number" required min="0" step="0.01" placeholder="Ej. 16.0" className={inputClass} />
+
+                {hasInterest !== '' && (
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-2 mt-4">
+                    <div className="grid grid-cols-2 gap-4 mb-2">
+                      <div>
+                        <label htmlFor="months" className={labelClass}>{t.monthsLabel}</label>
+                        <input id="months" name="months" type="number" required min="1" max="24" step="1"
+                          placeholder="Ej. 12 (máx. 24)" className={inputClass}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value);
+                            if (v > 24) e.target.value = '24';
+                            if (v < 1 && e.target.value !== '') e.target.value = '1';
+                          }}
+                        />
+                      </div>
+                      {hasInterest === 'si' && (
+                        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                          <label htmlFor="interestRate" className={labelClass}>{t.interestLabel}</label>
+                          <input id="interestRate" name="interestRate" type="number" required min="0" step="0.01" placeholder="Ej. 16.0" className={inputClass} />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                    
+                    <div>
+                      <label htmlFor="price" className={labelClass}>{t.priceLabel}</label>
+                      <input id="price" name="price" type="text" required placeholder="0.00"
+                        className={inputClass} value={priceStr} onChange={handlePriceChange} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>{t.currencyLabel}</label>
+                      <div className="grid grid-cols-2 gap-3 mt-2">
+                        <button type="button" onClick={() => setCurrency('mxn')}
+                          className={`py-2 px-3 text-sm font-medium rounded-md border transition-all flex items-center justify-center gap-1.5 ${currency === 'mxn' ? 'bg-green-700/80 text-white border-green-600 shadow-sm' : 'bg-transparent border-input hover:bg-muted'}`}>
+                          🇲🇽 {t.currencyMXN}
+                        </button>
+                        <button type="button" onClick={() => setCurrency('usd')}
+                          className={`py-2 px-3 text-sm font-medium rounded-md border transition-all flex items-center justify-center gap-1.5 ${currency === 'usd' ? 'bg-blue-700/80 text-white border-blue-600 shadow-sm' : 'bg-transparent border-input hover:bg-muted'}`}>
+                          🇺🇸 {t.currencyUSD}
+                        </button>
+                      </div>
+                    </div>
+                    {currency === 'usd' && (
+                      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {currentExchangeRate ? `1 USD = $${currentExchangeRate.toFixed(2)} MXN` : 'Cargando tipo de cambio...'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 

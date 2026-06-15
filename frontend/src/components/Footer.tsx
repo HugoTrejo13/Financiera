@@ -30,8 +30,6 @@ const Footer: React.FC = () => {
           <h4 className="text-white font-semibold mb-4 tracking-wide">Recursos</h4>
           <ul className="space-y-3 text-sm">
             <li><a href="#" className="hover:text-primary transition-colors">Simulador de Deudas</a></li>
-            <li><a href="#" className="hover:text-primary transition-colors">Calculadora ISR <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded ml-1">Pronto</span></a></li>
-            <li><a href="#" className="hover:text-primary transition-colors">Rendimientos Cetes <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded ml-1">Pronto</span></a></li>
             <li><a href="#" className="hover:text-primary transition-colors">Blog Financiero</a></li>
           </ul>
         </div>
@@ -51,10 +49,8 @@ const Footer: React.FC = () => {
 
       <div className="max-w-6xl mx-auto mt-16 pt-8 border-t border-slate-800 text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4">
         <p>© {new Date().getFullYear()} Financiera App. Todos los derechos reservados.</p>
-        <div className="flex items-center gap-2">
-          <span>Hecho con</span>
-          <span className="text-red-500"></span>
-          <span>en México</span>
+        <div className="flex items-center gap-2 font-medium">
+          <span>Hecho en México</span>
         </div>
       </div>
     </footer>

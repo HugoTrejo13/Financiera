@@ -53,7 +53,7 @@ const Footer: React.FC = () => {
         <p>© {new Date().getFullYear()} Financiera App. Todos los derechos reservados.</p>
         <div className="flex items-center gap-2">
           <span>Hecho con</span>
-          <span className="text-red-500">❤️</span>
+          <span className="text-red-500"></span>
           <span>en México</span>
         </div>
       </div>

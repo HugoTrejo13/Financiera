@@ -35,6 +35,7 @@ class DebtBase(BaseModel):
     months: int | None = Field(default=None, gt=0)
     has_interest: bool | None = Field(default=None)
     interest_rate: float = Field(default=0.0, ge=0)
+    paid_months: int | None = Field(default=0, ge=0)
 
 class DebtCreate(DebtBase):
     pass
@@ -44,6 +45,7 @@ class DebtUpdate(BaseModel):
     remaining_amount: float | None = None
     interest_rate: float | None = None
     monthly_payment: float | None = None
+    paid_months: int | None = None
 
 class DebtResponse(DebtBase):
     id: int

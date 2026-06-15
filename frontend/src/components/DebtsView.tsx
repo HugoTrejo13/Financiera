@@ -577,9 +577,16 @@ export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
         <DebtDetailsModal 
           debt={selectedDebt} 
           onClose={() => setSelectedDebt(null)} 
-          onUpdated={() => {
-            fetchDebts();
-            setSelectedDebt(null); // Opcional: cierra el modal tras guardar, o puedes dejarlo abierto con los nuevos datos si actualizamos selectedDebt. Para simplificar, lo cerramos y recargamos.
+          onUpdated={async () => {
+            try {
+              const res = await api.get('/api/debts/');
+              setDebts(res.data);
+              // Actualizamos el selectedDebt con los datos frescos para que la vista se actualice sin cerrarse
+              const updated = res.data.find((d: any) => d.id === selectedDebt.id);
+              if (updated) setSelectedDebt(updated);
+            } catch (err) {
+              console.error(err);
+            }
           }}
         />
       )}

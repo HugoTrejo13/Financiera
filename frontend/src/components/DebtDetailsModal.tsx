@@ -15,6 +15,7 @@ interface Debt {
   total_amount: number;
   remaining_amount: number;
   monthly_payment: number;
+  paid_months?: number;
 }
 
 interface DebtDetailsModalProps {
@@ -31,6 +32,7 @@ export default function DebtDetailsModal({ debt, onClose, onUpdated }: DebtDetai
   const [description, setDescription] = useState(debt.description);
   const [purchaseDate, setPurchaseDate] = useState(debt.purchase_date);
   const [paymentType, setPaymentType] = useState(debt.payment_type as 'contado' | 'meses');
+  const [localPaidMonths, setLocalPaidMonths] = useState(debt.paid_months || 0);
   
   // Parseamos el price para mostrarlo en el input de texto (como lo manejamos en creación)
   const formatWithCommas = (val: string) => {
@@ -55,17 +57,9 @@ export default function DebtDetailsModal({ debt, onClose, onUpdated }: DebtDetai
   // -- LÓGICA DE CÁLCULO DE MESES Y AMORTIZACIÓN (VISTA LECTURA) --
   const { monthsElapsed, totalMonths, isCompleted, amortization } = useMemo(() => {
     const start = new Date(debt.purchase_date);
-    const today = new Date();
     
-    let elapsed = (today.getFullYear() - start.getFullYear()) * 12;
-    elapsed += today.getMonth() - start.getMonth();
-    if (today.getDate() < start.getDate()) {
-      elapsed--;
-    }
-    
-    elapsed = Math.max(0, elapsed);
     const total = debt.payment_type === 'meses' && debt.months ? debt.months : 1;
-    const cappedElapsed = Math.min(elapsed, total);
+    const cappedElapsed = Math.min(localPaidMonths, total);
     
     const schedule = [];
     for (let i = 1; i <= total; i++) {
@@ -84,7 +78,7 @@ export default function DebtDetailsModal({ debt, onClose, onUpdated }: DebtDetai
       isCompleted: cappedElapsed >= total,
       amortization: schedule
     };
-  }, [debt]);
+  }, [debt, localPaidMonths]);
 
   // -- CÁLCULOS FINANCIEROS (VISTA LECTURA) --
   const { principal, interest, totalPaid, remaining } = useMemo(() => {
@@ -131,6 +125,22 @@ export default function DebtDetailsModal({ debt, onClose, onUpdated }: DebtDetai
       alert('Error al guardar los cambios.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleMonthStatus = async (monthIndex: number, currentStatus: string) => {
+    if (debt.payment_type !== 'meses') return;
+    
+    const newPaidMonths = currentStatus === 'paid' ? monthIndex - 1 : monthIndex;
+    setLocalPaidMonths(newPaidMonths);
+    
+    try {
+      await api.put(`/api/debts/${debt.id}`, { paid_months: newPaidMonths });
+      onUpdated();
+    } catch (err) {
+      console.error('Error toggling month status', err);
+      setLocalPaidMonths(debt.paid_months || 0);
+      alert('Error al actualizar el pago.');
     }
   };
 
@@ -328,7 +338,11 @@ export default function DebtDetailsModal({ debt, onClose, onUpdated }: DebtDetai
                         <div className="pr-4 max-h-[400px] overflow-y-auto space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
                           {amortization.map((payment, idx) => (
                             <div key={idx} className="relative flex items-center group is-active">
-                              <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-card shrink-0 shadow-sm z-10 ${payment.status === 'paid' ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}`}>
+                              <div 
+                                onClick={() => toggleMonthStatus(payment.month, payment.status)}
+                                className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-card shrink-0 shadow-sm z-10 cursor-pointer transition-transform hover:scale-110 active:scale-95 ${payment.status === 'paid' ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-muted text-muted-foreground hover:bg-muted-foreground/20'}`}
+                                title={payment.status === 'paid' ? 'Desmarcar como pagado' : 'Marcar como pagado'}
+                              >
                                 {payment.status === 'paid' ? <CheckCircle2 className="w-5 h-5" /> : <Clock className="w-4 h-4" />}
                               </div>
                               <div className="ml-6 w-full p-4 rounded-xl border border-border bg-card shadow-sm transition-colors hover:bg-muted/30">

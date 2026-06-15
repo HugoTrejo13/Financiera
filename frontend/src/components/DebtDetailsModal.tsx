@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { X, Calendar, DollarSign, TrendingDown, CheckCircle2, Clock, Info, Edit2, Save } from 'lucide-react';
-import { CalendarDays } from 'lucide-react';
+import { X, Calendar, DollarSign, TrendingDown, CheckCircle2, Clock, Info, Edit2, Save, CalendarDays } from 'lucide-react';
 import api from '../lib/api';
 
 interface Debt {

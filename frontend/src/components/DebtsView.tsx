@@ -18,7 +18,6 @@ interface Debt {
 }
 
 interface DebtsViewProps {
-  lang?: 'es' | 'en';
   onBack?: () => void;
 }
 
@@ -28,7 +27,7 @@ const getEffectiveCost = (debt: Debt): number => {
   return debt.remaining_amount;
 };
 
-export default function DebtsView({ lang = 'es', onBack }: DebtsViewProps) {
+export default function DebtsView({ onBack }: DebtsViewProps) {
   const [debts, setDebts] = useState<Debt[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Debt | null>(null);

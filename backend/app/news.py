@@ -4,19 +4,16 @@ Consulta NewsAPI.org si hay API key configurada; si no, devuelve noticias de dem
 Caché en memoria de 30 minutos para no exceder el límite gratuito.
 """
 
-import os
 import time
 import httpx
 from typing import Any
-from dotenv import load_dotenv
-
-load_dotenv()
+from .database import settings
 
 # ─── Caché simple en memoria ─────────────────────────────────────────────────
 _cache: dict[str, Any] = {}
 _CACHE_TTL = 30 * 60  # 30 minutos en segundos
 
-NEWS_API_KEY = os.getenv("NEWS_API_KEY", "")
+NEWS_API_KEY = settings.NEWS_API_KEY
 NEWS_API_URL = "https://newsapi.org/v2/everything"
 
 # ─── Artículos de demostración (se usan si no hay API key o falla la llamada) ─

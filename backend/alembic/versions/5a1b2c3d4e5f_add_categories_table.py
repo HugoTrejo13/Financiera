@@ -23,15 +23,16 @@ def upgrade():
         sa.Column('name', sa.String(), nullable=False),
         sa.Column('icon', sa.String(), nullable=False),
         sa.Column('color', sa.String(), nullable=False),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('name')
     )
     op.create_index(op.f('ix_categories_id'), 'categories', ['id'], unique=False)
     
     # Agregar columna category_id a debts
-    op.add_column('debts', sa.Column('category_id', sa.Integer(), nullable=True))
-    op.create_foreign_key('fk_debts_category_id', 'debts', 'categories', ['category_id'], ['id'])
+    with op.batch_alter_table('debts', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('category_id', sa.Integer(), nullable=True))
+        batch_op.create_foreign_key('fk_debts_category_id', 'categories', ['category_id'], ['id'])
     
     # Insertar categorías predefinidas
     op.execute("""
@@ -48,8 +49,9 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_constraint('fk_debts_category_id', 'debts', type_='foreignkey')
-    op.drop_column('debts', 'category_id')
+    with op.batch_alter_table('debts', schema=None) as batch_op:
+        batch_op.drop_constraint('fk_debts_category_id', type_='foreignkey')
+        batch_op.drop_column('category_id')
     op.drop_index(op.f('ix_categories_id'), table_name='categories')
     op.drop_table('categories')
 

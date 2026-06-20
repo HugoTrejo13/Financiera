@@ -3,6 +3,16 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
 
+class Category(Base):
+    __tablename__ = "categories"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, unique=True)
+    icon = Column(String, nullable=False)  # emoji o nombre de icono
+    color = Column(String, nullable=False)  # color hex
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    debts = relationship("Debt", back_populates="category")
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -32,8 +42,13 @@ class Debt(Base):
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
+    # Foreign Keys
     owner_id = Column(Integer, ForeignKey("users.id"))
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    
+    # Relationships
     owner = relationship("User", back_populates="debts")
+    category = relationship("Category", back_populates="debts")
 
 class InvestmentPlan(Base):
     __tablename__ = "investment_plans"

@@ -304,12 +304,6 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
           </div>
 
           <form onSubmit={handleAddDebt} className="space-y-2">
-            {/* Descripción */}
-            <div>
-              <label htmlFor="desc" className={labelClass}>{t.descLabel}</label>
-              <input id="desc" name="description" type="text" required placeholder={t.descPlaceholder} className={inputClass} />
-            </div>
-
             {/* Categoría */}
             <div>
               <label className={labelClass}>Categoría</label>
@@ -335,6 +329,12 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Descripción */}
+            <div>
+              <label htmlFor="desc" className={labelClass}>{t.descLabel}</label>
+              <input id="desc" name="description" type="text" required placeholder={t.descPlaceholder} className={inputClass} />
             </div>
 
             {/* Fila: Fecha y Compra Impulsiva */}

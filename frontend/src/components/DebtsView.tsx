@@ -2,6 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Wallet, CalendarDays, Filter } from 'lucide-react';
 import api from '../lib/api';
 import DebtDetailsModal from './DebtDetailsModal';
+import ExpenseChart from './ExpenseChart';
+
+interface Category {
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+}
 
 interface Debt {
   id: number;
@@ -15,6 +23,8 @@ interface Debt {
   total_amount: number;
   remaining_amount: number;
   monthly_payment: number;
+  category_id?: number;
+  category?: Category;
 }
 
 interface DebtsViewProps {
@@ -29,6 +39,7 @@ const getEffectiveCost = (debt: Debt): number => {
 
 export default function DebtsView({ onBack }: DebtsViewProps) {
   const [debts, setDebts] = useState<Debt[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Debt | null>(null);
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
@@ -40,6 +51,7 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
   const [currency, setCurrency] = useState<'mxn' | 'usd'>('mxn');
   const [currentExchangeRate, setCurrentExchangeRate] = useState<number | null>(null);
   const [isImpulsive, setIsImpulsive] = useState<boolean | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   // Filter states
   const [filterMode, setFilterMode] = useState<'none' | 'range'>('none');
@@ -121,6 +133,15 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get('/api/categories/');
+      setCategories(res.data);
+    } catch (err) {
+      console.error('Error fetching categories', err);
+    }
+  };
+
   const fetchExchangeRate = async () => {
     try {
       const res = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=MXN');
@@ -133,9 +154,10 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
     }
   };
 
-  useEffect(() => { 
-    fetchDebts(); 
+  useEffect(() => {
+    fetchDebts();
     fetchExchangeRate();
+    fetchCategories();
   }, []);
 
   // Filtered debts
@@ -181,6 +203,7 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
         has_interest: paymentType === 'meses' ? (hasInterest === 'si') : null,
         interest_rate: (paymentType === 'meses' && hasInterest === 'si')
           ? parseFloat(form.get('interestRate') as string) : 0,
+        category_id: selectedCategory,
       });
 
       formElement.reset();
@@ -189,6 +212,7 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
       setPriceStr('');
       setCurrency('mxn');
       setIsImpulsive(null);
+      setSelectedCategory(null);
       fetchDebts();
     } catch (err) {
       console.error('Error creating debt', err);
@@ -270,14 +294,43 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
-        {/* ── FORMULARIO ── */}
-        <div className="rounded-xl border bg-card text-card-foreground shadow-md p-6">
+        {/* ── COLUMNA IZQUIERDA: FORMULARIO Y GRÁFICA ── */}
+        <div className="space-y-8">
+          {/* ── FORMULARIO ── */}
+          <div className="rounded-xl border bg-card text-card-foreground shadow-md p-6" data-tour="add-expense">
           <div className="flex flex-col space-y-1.5 mb-5">
             <h3 className="font-semibold leading-none tracking-tight">{t.newDebtTitle}</h3>
             <p className="text-sm text-muted-foreground">{t.newDebtSubtitle}</p>
           </div>
 
           <form onSubmit={handleAddDebt} className="space-y-2">
+            {/* Categoría */}
+            <div>
+              <label className={labelClass}>Categoría</label>
+              <div className="grid grid-cols-4 gap-2 mt-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all hover:scale-105 ${
+                      selectedCategory === cat.id
+                        ? 'border-2 shadow-md'
+                        : 'border-input hover:bg-muted'
+                    }`}
+                    style={{
+                      borderColor: selectedCategory === cat.id ? cat.color : undefined,
+                      backgroundColor: selectedCategory === cat.id ? `${cat.color}15` : undefined,
+                    }}
+                    title={cat.name}
+                  >
+                    <span className="text-2xl mb-1">{cat.icon}</span>
+                    <span className="text-[10px] font-medium text-center leading-tight">{cat.name.split(' ')[0]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Descripción */}
             <div>
               <label htmlFor="desc" className={labelClass}>{t.descLabel}</label>
@@ -439,6 +492,18 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
               <Plus className="mr-2 h-4 w-4" /> {t.addButton}
             </button>
           </form>
+          </div>
+
+          {/* ── GRÁFICA (Solo visible cuando filterMode === 'range') ── */}
+          {filterMode === 'range' && (filterFrom || filterTo) && (
+            <div data-tour="expense-chart">
+              <ExpenseChart
+                debts={filteredDebts}
+                filterFrom={filterFrom}
+                filterTo={filterTo}
+              />
+            </div>
+          )}
         </div>
 
         {/* ── TABLA ── */}
@@ -525,6 +590,7 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
               <table className="w-full caption-bottom text-sm">
                 <thead>
                   <tr className="border-b bg-muted/30">
+                    <th className="h-11 px-4 text-center align-middle font-semibold text-xs uppercase tracking-wide text-muted-foreground">Categoría</th>
                     <th className="h-11 px-4 text-left align-middle font-semibold text-xs uppercase tracking-wide text-muted-foreground">{t.colDesc}</th>
                     <th className="h-11 px-4 text-center align-middle font-semibold text-xs uppercase tracking-wide text-muted-foreground">{t.colDate}</th>
                     <th className="h-11 px-4 text-center align-middle font-semibold text-xs uppercase tracking-wide text-muted-foreground">{t.colType}</th>
@@ -535,11 +601,24 @@ export default function DebtsView({ onBack }: DebtsViewProps) {
                 </thead>
                 <tbody className="[&_tr:last-child]:border-0">
                   {filteredDebts.map((debt) => (
-                    <tr 
-                      key={debt.id} 
+                    <tr
+                      key={debt.id}
                       onClick={() => setSelectedDebt(debt)}
                       className="border-b transition-colors hover:bg-muted/60 cursor-pointer"
                     >
+                      <td className="px-4 py-3 align-middle text-center">
+                        {debt.category ? (
+                          <div
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-lg"
+                            style={{ backgroundColor: `${debt.category.color}20` }}
+                            title={debt.category.name}
+                          >
+                            <span className="text-xl">{debt.category.icon}</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 align-middle font-medium text-left">
                         <span className="block break-words max-w-[200px]">{debt.description}</span>
                       </td>

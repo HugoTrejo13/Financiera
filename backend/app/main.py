@@ -27,6 +27,15 @@ app.add_middleware(
 )
 
 # --- Schemas ---
+class CategoryResponse(BaseModel):
+    id: int
+    name: str
+    icon: str
+    color: str
+    
+    class Config:
+        from_attributes = True
+
 class DebtBase(BaseModel):
     description: str = Field(..., min_length=1)
     purchase_date: str = Field(..., min_length=1)  # YYYY-MM-DD
@@ -36,6 +45,7 @@ class DebtBase(BaseModel):
     has_interest: bool | None = Field(default=None)
     interest_rate: float = Field(default=0.0, ge=0)
     paid_months: int | None = Field(default=0, ge=0)
+    category_id: int | None = Field(default=None)
 
 class DebtCreate(DebtBase):
     pass
@@ -52,6 +62,7 @@ class DebtResponse(DebtBase):
     total_amount: float
     remaining_amount: float
     monthly_payment: float
+    category: CategoryResponse | None = None
 
     class Config:
         from_attributes = True
@@ -64,6 +75,12 @@ def read_root():
 # Simulación de usuario logueado (hasta agregar Supabase Auth)
 def get_current_user_id() -> int:
     return 1
+
+# ─── Categorías ──────────────────────────────────────────────────────────────
+@app.get("/api/categories/", response_model=List[CategoryResponse], tags=["Categories"])
+def get_categories(db: Session = Depends(get_db)):
+    """Obtener todas las categorías disponibles"""
+    return db.query(models.Category).all()
 
 @app.get("/api/debts/", response_model=List[DebtResponse], tags=["Debts"])
 def get_debts(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):

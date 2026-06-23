@@ -4,11 +4,13 @@ import MortgageView from './components/MortgageView';
 import AutoLoanView from './components/AutoLoanView';
 import NewsSection from './components/NewsSection';
 import Footer from './components/Footer';
-import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft } from 'lucide-react';
+import InteractiveTour from './components/InteractiveTour';
+import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft, BookOpen } from 'lucide-react';
 
 function App() {
   const [currentView, setCurrentView] = useState('lobby'); // 'lobby', 'debts', 'mortgage', 'auto'
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   
   // Estado para el modo oscuro (leemos de localStorage si existe)
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -38,12 +40,17 @@ function App() {
         {/* Navbar Interno */}
         <header className="w-full bg-card border-b border-border h-16 flex items-center relative z-50 shadow-sm">
           <div className="w-full px-4 flex items-center gap-4">
-            <button onClick={() => setCurrentView('lobby')} className="text-muted-foreground hover:bg-muted hover:text-foreground p-2 rounded-full transition-colors">
+            <button
+              onClick={() => setCurrentView('lobby')}
+              className="text-muted-foreground hover:bg-muted hover:text-foreground p-2 rounded-full transition-colors"
+              data-tour="back-button"
+            >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="flex items-center gap-2 text-foreground font-semibold hover:text-primary transition-colors"
+              data-tour="tools-menu"
             >
               Herramientas
               <svg className={`fill-current h-4 w-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -139,13 +146,24 @@ function App() {
               onClick={() => setIsDarkMode(!isDarkMode)}
               className="p-2 rounded-full text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors cursor-pointer"
               title={isDarkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+              data-tour="dark-mode-toggle"
             >
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
 
             <button
+              onClick={() => setShowTutorial(true)}
+              className="inline-flex items-center gap-2 rounded-full text-sm font-semibold transition-all bg-muted text-foreground hover:bg-muted/80 hover:scale-105 h-9 px-5 border border-border cursor-pointer"
+              data-tour="guide-button"
+            >
+              <BookOpen className="w-4 h-4" />
+              Modo Guía
+            </button>
+            
+            <button
               onClick={() => setCurrentView('debts')}
               className="inline-flex items-center gap-2 rounded-full text-sm font-semibold transition-all bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 h-9 px-5 shadow-md shadow-primary/20 cursor-pointer"
+              data-tour="start-button"
             >
               Comenzar
             </button>
@@ -198,12 +216,24 @@ function App() {
         </div>
 
         {/* CTA principal */}
-        <button
-          onClick={() => setCurrentView('debts')}
-          className="inline-flex items-center justify-center gap-2 rounded-full text-lg font-bold transition-all bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 h-14 px-10 shadow-xl shadow-primary/25 cursor-pointer"
-        >
-          Comenzar ahora
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <button
+            onClick={() => setShowTutorial(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-full text-lg font-semibold transition-all bg-muted text-foreground hover:bg-muted/80 hover:scale-105 active:scale-95 h-14 px-8 border-2 border-border cursor-pointer"
+            data-tour="guide-button-hero"
+          >
+            <BookOpen className="w-5 h-5" />
+            Modo Guía
+          </button>
+          
+          <button
+            onClick={() => setCurrentView('debts')}
+            className="inline-flex items-center justify-center gap-2 rounded-full text-lg font-bold transition-all bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 h-14 px-10 shadow-xl shadow-primary/25 cursor-pointer"
+            data-tour="start-button-hero"
+          >
+            Comenzar ahora
+          </button>
+        </div>
 
         {/* Indicador de scroll */}
         <div className="mt-16 flex flex-col items-center gap-1.5 text-muted-foreground/40 animate-bounce">
@@ -219,6 +249,17 @@ function App() {
 
       {/* ── Footer Profesional ────────────────────────────────────────────────── */}
       <Footer />
+      
+      {/* ── Interactive Tour ──────────────────────────────────────────────────── */}
+      {showTutorial && (
+        <InteractiveTour
+          onComplete={() => {
+            setShowTutorial(false);
+            setCurrentView('debts');
+          }}
+          onSkip={() => setShowTutorial(false)}
+        />
+      )}
     </div>
   );
 }

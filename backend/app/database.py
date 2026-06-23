@@ -17,10 +17,21 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # Configuración SQLAlchemy
+from sqlalchemy import event
+
 engine = create_engine(
     settings.DATABASE_URL, 
     connect_args={"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
 )
+
+@event.listens_for(engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    if settings.DATABASE_URL.startswith("sqlite"):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.close()
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

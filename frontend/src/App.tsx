@@ -170,7 +170,9 @@ function App() {
 
         {/* Tagline en dos líneas estilo editorial */}
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight mb-4">
-          <span className="text-primary">Controla tus gastos</span>
+          <span className="text-primary">Controla tus gastos,</span>
+          <br />
+          <span className="text-primary">controla tu vida</span>
         </h1>
 
         {/* Subtítulo */}

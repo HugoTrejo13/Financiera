@@ -7,4 +7,6 @@ pydantic
 psycopg2-binary
 pyjwt
 httpx
-
+sqlmodel
+aiosqlite
+greenlet

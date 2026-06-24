@@ -14,11 +14,22 @@ def get_current_user_id() -> int:
 
 @router.get("/", response_model=List[models.DebtResponse])
 async def get_debts(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    result = await db.execute(select(models.Debt).where(models.Debt.owner_id == user_id).offset(skip).limit(limit))
-    return result.scalars().all()
+    from sqlalchemy.orm import selectinload
+    
+    result = await db.execute(
+        select(models.Debt)
+        .options(selectinload(models.Debt.category))
+        .where(models.Debt.owner_id == user_id)
+        .offset(skip)
+        .limit(limit)
+    )
+    debts = result.scalars().all()
+    return debts
 
 @router.post("/", response_model=models.DebtResponse)
 async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    from sqlalchemy.orm import selectinload
+    
     if debt.payment_type == "contado":
         total_amount = debt.price
         monthly_payment = 0.0
@@ -41,6 +52,16 @@ async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db
     db.add(db_debt)
     await db.commit()
     await db.refresh(db_debt)
+    
+    # Cargar la relación de categoría si existe
+    if db_debt.category_id:
+        result = await db.execute(
+            select(models.Debt)
+            .options(selectinload(models.Debt.category))
+            .where(models.Debt.id == db_debt.id)
+        )
+        db_debt = result.scalar_one()
+    
     return db_debt
 
 @router.put("/{debt_id}", response_model=models.DebtResponse)

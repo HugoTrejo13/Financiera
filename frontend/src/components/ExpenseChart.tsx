@@ -38,12 +38,27 @@ const DEFAULT_COLORS = [
 ];
 
 export default function ExpenseChart({ debts, filterFrom, filterTo }: ExpenseChartProps) {
+  // Filtrar deudas según el rango de fechas
+  const filteredDebts = useMemo(() => {
+    if (!filterFrom && !filterTo) return debts;
+    
+    return debts.filter(debt => {
+      const debtDate = debt.purchase_date;
+      if (!debtDate) return false;
+      
+      const from = filterFrom || '0000-00-00';
+      const to = filterTo || '9999-99-99';
+      
+      return debtDate >= from && debtDate <= to;
+    });
+  }, [debts, filterFrom, filterTo]);
+
   // Calcular datos para la gráfica agrupados por categoría
   const chartData = useMemo(() => {
-    if (debts.length === 0) return [];
+    if (filteredDebts.length === 0) return [];
 
     // Agrupar gastos por categoría y sumar totales
-    const groupedData = debts.reduce((acc, debt) => {
+    const groupedData = filteredDebts.reduce((acc, debt) => {
       const categoryName = debt.category?.name || 'Sin categoría';
       const categoryIcon = debt.category?.icon || '💰';
       const categoryColor = debt.category?.color || DEFAULT_COLORS[0];
@@ -71,7 +86,7 @@ export default function ExpenseChart({ debts, filterFrom, filterTo }: ExpenseCha
         color: data.color,
       }))
       .sort((a, b) => b.value - a.value);
-  }, [debts]);
+  }, [filteredDebts]);
 
   const totalAmount = useMemo(() => {
     return chartData.reduce((sum, item) => sum + item.value, 0);
@@ -180,23 +195,51 @@ export default function ExpenseChart({ debts, filterFrom, filterTo }: ExpenseCha
         </ResponsiveContainer>
       </div>
 
+      {/* Leyenda de categorías */}
+      <div className="mt-6 pt-6 border-t border-border">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Desglose por categoría</p>
+        <div className="space-y-2">
+          {chartData.map((item, index) => {
+            const percentage = ((item.value / totalAmount) * 100).toFixed(1);
+            return (
+              <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-4 h-4 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-xl">{item.icon}</span>
+                  <span className="text-sm font-medium text-foreground">{item.name}</span>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-foreground">
+                    ${item.value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{percentage}%</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Estadísticas adicionales */}
       <div className="mt-6 pt-6 border-t border-border">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="text-center">
             <p className="text-xs text-muted-foreground mb-1">Total de compras</p>
-            <p className="text-lg font-bold text-foreground">{debts.length}</p>
+            <p className="text-lg font-bold text-foreground">{filteredDebts.length}</p>
           </div>
           <div className="text-center">
             <p className="text-xs text-muted-foreground mb-1">Gasto promedio</p>
             <p className="text-lg font-bold text-foreground">
-              ${(totalAmount / debts.length).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${(totalAmount / filteredDebts.length).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
           </div>
           <div className="text-center col-span-2 md:col-span-1">
-            <p className="text-xs text-muted-foreground mb-1">Gasto más alto</p>
+            <p className="text-xs text-muted-foreground mb-1">Categorías</p>
             <p className="text-lg font-bold text-primary">
-              ${Math.max(...chartData.map(d => d.value)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {chartData.length}
             </p>
           </div>
         </div>

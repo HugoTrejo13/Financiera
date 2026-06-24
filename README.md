@@ -14,9 +14,12 @@ Financiera is a personal finance application built to help users take control of
 
 ## ✨ Features
 - **Track** cash purchases and installment debts (with or without interest).
+- **Categorize** expenses with visual icons and colors for better organization.
+- **Visualize** spending patterns with interactive pie charts grouped by category.
 - **Calculate** automatic amortization schedules and timeline progress for active debts.
 - **Convert** USD to MXN dynamically using the real-time Frankfurter API.
 - **Edit** existing financial records seamlessly through a robust centered modal interface.
+- **Filter** expenses by date range to analyze specific periods.
 - **Read** filtered real-time economic and financial news directly from the dashboard.
 
 ## 🛠 Tech Stack
@@ -49,20 +52,29 @@ cd Financiera
 # Setup Backend
 cd backend
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+
+# Initialize default categories (run once)
+python init_categories.py
+
+# Start backend server
 uvicorn app.main:app --reload
 
-# Setup Frontend
-cd ../frontend
+# Setup Frontend (in a new terminal)
+cd frontend
 npm install
 npm run dev
 ```
 
 ### Usage
 ```bash
-# Open your browser and navigate to the frontend port (usually 5173).
-# Click on "Nueva compra", select "Dólar (USD)" and watch the exchange rate auto-fill.
+# Open your browser and navigate to http://localhost:5173
+# 1. Add a new expense by clicking "Nueva compra"
+# 2. Select a category (Food, Transport, etc.)
+# 3. Choose payment type (cash or installments)
+# 4. For USD purchases, watch the exchange rate auto-fill
+# 5. View your expense breakdown by category in the interactive chart
 ```
 
 ## 📬 Contact

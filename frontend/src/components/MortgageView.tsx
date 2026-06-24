@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Home, TrendingUp, DollarSign, Calendar, Building2, PiggyBank } from 'lucide-react';
+import { Home, TrendingUp, DollarSign, Calendar, Building2, PiggyBank, Download } from 'lucide-react';
+import { generateMortgagePDF } from '../lib/pdfGenerator';
 
 export default function MortgageView() {
   // Estados del formulario
@@ -94,6 +95,28 @@ export default function MortgageView() {
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
     setShowResults(true);
+  };
+
+  const handleDownloadPDF = () => {
+    if (!calculations) return;
+    
+    generateMortgagePDF({
+      bankName,
+      propertyValue: calculations.propertyValue,
+      downPayment: calculations.downPayment,
+      downPaymentPercent: calculations.downPaymentPercent,
+      loanAmount: calculations.loanAmount,
+      monthlyPayment: calculations.monthlyPayment,
+      monthlyPaymentWithExtra: calculations.monthlyPaymentWithExtra,
+      totalMonths: calculations.totalMonths,
+      actualMonths: calculations.actualMonths,
+      totalInterest: calculations.totalInterest,
+      totalPrincipal: calculations.totalPrincipal,
+      totalCost: calculations.totalCost,
+      extraPayments: calculations.extraPayments,
+      interestRate,
+      schedule: calculations.schedule,
+    });
   };
 
   const inputClass = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50";
@@ -266,7 +289,16 @@ export default function MortgageView() {
               <div className="rounded-xl border bg-card p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold">Resumen del Crédito</h3>
-                  <span className="text-sm text-muted-foreground">{bankName}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">{bankName}</span>
+                    <button
+                      onClick={handleDownloadPDF}
+                      className="inline-flex items-center gap-2 rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 cursor-pointer"
+                    >
+                      <Download className="w-4 h-4" />
+                      Descargar PDF
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

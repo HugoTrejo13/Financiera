@@ -68,25 +68,43 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
   };
 
   const onSubmit = async (values: DebtFormValues) => {
-    const rawPrice = parseFloat(values.priceStr.replace(/,/g, ''));
-    if (isNaN(rawPrice)) return;
-    const finalPrice = values.currency === 'usd' ? rawPrice * (currentExchangeRate || 1) : rawPrice;
+    try {
+      console.log('📝 Valores del formulario:', values);
+      
+      const rawPrice = parseFloat(values.priceStr.replace(/,/g, ''));
+      if (isNaN(rawPrice) || rawPrice <= 0) {
+        alert('Por favor ingresa un precio válido');
+        return;
+      }
+      
+      const finalPrice = values.currency === 'usd' ? rawPrice * (currentExchangeRate || 1) : rawPrice;
 
-    const data = {
-      description: values.description,
-      purchase_date: values.purchase_date,
-      payment_type: values.payment_type,
-      price: finalPrice,
-      months: values.payment_type === 'meses' ? values.months : null,
-      has_interest: values.payment_type === 'meses' ? (values.has_interest === 'si') : null,
-      interest_rate: (values.payment_type === 'meses' && values.has_interest === 'si')
-        ? values.interest_rate : 0,
-      category_id: values.category_id,
-    };
+      const data = {
+        description: values.description,
+        purchase_date: values.purchase_date,
+        payment_type: values.payment_type,
+        price: finalPrice,
+        months: values.payment_type === 'meses' ? values.months : null,
+        has_interest: values.payment_type === 'meses' ? (values.has_interest === 'si') : null,
+        interest_rate: (values.payment_type === 'meses' && values.has_interest === 'si')
+          ? values.interest_rate : 0,
+        category_id: values.category_id,
+      };
 
-    const success = await onCreate(data);
-    if (success) {
-      reset();
+      console.log('📤 Enviando datos al backend:', data);
+      
+      const success = await onCreate(data);
+      
+      if (success) {
+        console.log('✅ Compra creada exitosamente');
+        reset();
+      } else {
+        console.error('❌ Error al crear la compra');
+        alert('Error al crear la compra. Por favor intenta de nuevo.');
+      }
+    } catch (error) {
+      console.error('❌ Error en onSubmit:', error);
+      alert('Error inesperado. Revisa la consola para más detalles.');
     }
   };
 
@@ -104,29 +122,39 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
         {/* Categoría */}
         <div>
-          <label className={labelClass}>Categoría</label>
-          <div className="grid grid-cols-4 gap-2 mt-2">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setValue('category_id', cat.id, { shouldValidate: true })}
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all hover:scale-105 ${
-                  selectedCategory === cat.id
-                    ? 'border-2 shadow-md'
-                    : 'border-input hover:bg-muted'
-                }`}
-                style={{
-                  borderColor: selectedCategory === cat.id ? cat.color : undefined,
-                  backgroundColor: selectedCategory === cat.id ? `${cat.color}15` : undefined,
-                }}
-                title={cat.name}
-              >
-                <span className="text-2xl mb-1">{cat.icon}</span>
-                <span className="text-[10px] font-medium text-center leading-tight">{cat.name.split(' ')[0]}</span>
-              </button>
-            ))}
-          </div>
+          <label className={labelClass}>Categoría (Opcional)</label>
+          {categories.length === 0 ? (
+            <div className="p-4 rounded-lg border border-dashed border-border bg-muted/20 text-center">
+              <p className="text-sm text-muted-foreground">
+                No hay categorías disponibles.
+                <br />
+                <span className="text-xs">Ejecuta <code className="bg-muted px-1 py-0.5 rounded">python backend/init_categories.py</code> para crearlas.</span>
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-2 mt-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setValue('category_id', cat.id, { shouldValidate: true })}
+                  className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all hover:scale-105 ${
+                    selectedCategory === cat.id
+                      ? 'border-2 shadow-md'
+                      : 'border-input hover:bg-muted'
+                  }`}
+                  style={{
+                    borderColor: selectedCategory === cat.id ? cat.color : undefined,
+                    backgroundColor: selectedCategory === cat.id ? `${cat.color}15` : undefined,
+                  }}
+                  title={cat.name}
+                >
+                  <span className="text-2xl mb-1">{cat.icon}</span>
+                  <span className="text-[10px] font-medium text-center leading-tight">{cat.name.split(' ')[0]}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Descripción */}

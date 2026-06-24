@@ -33,10 +33,20 @@ app.add_middleware(
 # --- Manejador de Errores Centralizado ---
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    print(f"Error global capturado: {exc}")
+    import traceback
+    error_detail = str(exc)
+    error_traceback = traceback.format_exc()
+    
+    print(f"❌ Error global capturado: {error_detail}")
+    print(f"📍 Traceback completo:\n{error_traceback}")
+    
     return JSONResponse(
         status_code=500,
-        content={"detail": "Ha ocurrido un error interno en el servidor. Por favor, intenta más tarde."},
+        content={
+            "detail": "Ha ocurrido un error interno en el servidor.",
+            "error": error_detail,
+            "type": type(exc).__name__
+        },
     )
 
 # --- Rutas (Routers) ---

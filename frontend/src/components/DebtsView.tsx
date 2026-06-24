@@ -84,13 +84,13 @@ export default function DebtsView() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="space-y-8">
-          <DebtForm 
+          <DebtForm
             categories={categories}
             onCreate={createDebt}
             currentExchangeRate={currentExchangeRate}
           />
 
-          {filterMode === 'range' && (filterFrom || filterTo) && (
+          {debts.length > 0 && (
             <div data-tour="expense-chart">
               <ExpenseChart
                 debts={debts as any}
@@ -101,7 +101,7 @@ export default function DebtsView() {
           )}
         </div>
 
-        <DebtTable 
+        <DebtTable
           debts={debts}
           loading={loading}
           onDelete={setDeleteTarget}

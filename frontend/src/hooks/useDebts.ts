@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import type { Category } from './useCategories';
 
@@ -20,28 +20,44 @@ export interface Debt {
 }
 
 export const useDebts = () => {
-  const [debts, setDebts] = useState<Debt[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchDebts = async () => {
-    setLoading(true);
-    try {
+  const { 
+    data: debts = [], 
+    isLoading: loading, 
+    error: queryError,
+    refetch: fetchDebts
+  } = useQuery<Debt[]>({
+    queryKey: ['debts'],
+    queryFn: async () => {
       const response = await api.get('/api/debts/');
-      setDebts(response.data);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching debts:", err);
-      setError("Error al cargar las deudas");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data;
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (debtData: any) => {
+      const response = await api.post('/api/debts/', debtData);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['debts'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await api.delete(`/api/debts/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['debts'] });
+    },
+  });
 
   const createDebt = async (debtData: any) => {
     try {
-      await api.post('/api/debts/', debtData);
-      await fetchDebts();
+      await createMutation.mutateAsync(debtData);
       return true;
     } catch (err) {
       console.error("Error creating debt:", err);
@@ -51,8 +67,7 @@ export const useDebts = () => {
 
   const deleteDebt = async (id: number) => {
     try {
-      await api.delete(`/api/debts/${id}`);
-      await fetchDebts();
+      await deleteMutation.mutateAsync(id);
       return true;
     } catch (err) {
       console.error("Error deleting debt:", err);
@@ -60,9 +75,7 @@ export const useDebts = () => {
     }
   };
 
-  useEffect(() => {
-    fetchDebts();
-  }, []);
+  const error = queryError ? "Error al cargar las deudas" : null;
 
   return { debts, loading, error, fetchDebts, createDebt, deleteDebt };
 };

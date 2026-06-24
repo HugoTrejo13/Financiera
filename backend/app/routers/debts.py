@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 from typing import List
 
 from app.database import get_db
 from app import models
-from app import schemas
 
 router = APIRouter(prefix="/api/debts", tags=["Debts"])
 
@@ -12,12 +12,13 @@ router = APIRouter(prefix="/api/debts", tags=["Debts"])
 def get_current_user_id() -> int:
     return 1
 
-@router.get("/", response_model=List[schemas.DebtResponse])
-def get_debts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    return db.query(models.Debt).filter(models.Debt.owner_id == user_id).offset(skip).limit(limit).all()
+@router.get("/", response_model=List[models.DebtResponse])
+async def get_debts(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    result = await db.execute(select(models.Debt).where(models.Debt.owner_id == user_id).offset(skip).limit(limit))
+    return result.scalars().all()
 
-@router.post("/", response_model=schemas.DebtResponse)
-def create_debt(debt: schemas.DebtCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+@router.post("/", response_model=models.DebtResponse)
+async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     if debt.payment_type == "contado":
         total_amount = debt.price
         monthly_payment = 0.0
@@ -38,13 +39,14 @@ def create_debt(debt: schemas.DebtCreate, db: Session = Depends(get_db), user_id
         owner_id=user_id
     )
     db.add(db_debt)
-    db.commit()
-    db.refresh(db_debt)
+    await db.commit()
+    await db.refresh(db_debt)
     return db_debt
 
-@router.put("/{debt_id}", response_model=schemas.DebtResponse)
-def update_debt(debt_id: int, debt_update: schemas.DebtUpdate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    db_debt = db.query(models.Debt).filter(models.Debt.id == debt_id, models.Debt.owner_id == user_id).first()
+@router.put("/{debt_id}", response_model=models.DebtResponse)
+async def update_debt(debt_id: int, debt_update: models.DebtUpdate, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    result = await db.execute(select(models.Debt).where(models.Debt.id == debt_id, models.Debt.owner_id == user_id))
+    db_debt = result.scalar_one_or_none()
     if not db_debt:
         raise HTTPException(status_code=404, detail="Deuda no encontrada")
     
@@ -52,16 +54,17 @@ def update_debt(debt_id: int, debt_update: schemas.DebtUpdate, db: Session = Dep
     for key, value in update_data.items():
         setattr(db_debt, key, value)
         
-    db.commit()
-    db.refresh(db_debt)
+    await db.commit()
+    await db.refresh(db_debt)
     return db_debt
 
 @router.delete("/{debt_id}")
-def delete_debt(debt_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    db_debt = db.query(models.Debt).filter(models.Debt.id == debt_id, models.Debt.owner_id == user_id).first()
+async def delete_debt(debt_id: int, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    result = await db.execute(select(models.Debt).where(models.Debt.id == debt_id, models.Debt.owner_id == user_id))
+    db_debt = result.scalar_one_or_none()
     if not db_debt:
         raise HTTPException(status_code=404, detail="Deuda no encontrada")
     
-    db.delete(db_debt)
-    db.commit()
+    await db.delete(db_debt)
+    await db.commit()
     return {"message": "Deuda eliminada"}

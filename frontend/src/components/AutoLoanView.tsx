@@ -47,7 +47,7 @@ export default function AutoLoanView() {
     const monthlyLoanPayment = loanAmount * (rate * Math.pow(1 + rate, totalMonths)) / (Math.pow(1 + rate, totalMonths) - 1);
 
     // Pago mensual total (crédito + seguro)
-    const totalMonthlyPayment = monthlyLoanPayment + monthlyInsurance;
+    // Unused var removed
 
     // Generar tabla de amortización
     let balance = loanAmount;

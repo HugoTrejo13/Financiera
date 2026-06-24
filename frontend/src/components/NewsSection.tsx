@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ExternalLink, ChevronLeft, ChevronRight, Newspaper } from 'lucide-react';
 import api from '../lib/api';
 

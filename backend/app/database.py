@@ -1,14 +1,15 @@
 import os
 from pydantic_settings import BaseSettings
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlmodel import SQLModel
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Financiera V2 API"
     VERSION: str = "2.0.0"
     API_V1_STR: str = "/api"
-    # Por defecto SQLite si no se define DATABASE_URL
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./financiera.db")
+    # Convert sqlite:/// to sqlite+aiosqlite:///
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./financiera.db")
     NEWS_API_KEY: str = ""
 
     class Config:
@@ -16,28 +17,24 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Configuración SQLAlchemy
-from sqlalchemy import event
-
-engine = create_engine(
+engine = create_async_engine(
     settings.DATABASE_URL, 
-    connect_args={"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
+    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
 )
 
-@event.listens_for(engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    if settings.DATABASE_URL.startswith("sqlite"):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
-        cursor.execute("PRAGMA synchronous=NORMAL")
-        cursor.close()
+# No WAL PRAGMA via event listener because asyncio drivers manage connections differently.
+# But we can still do it via execution options if needed, but it's optional for async local dev.
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+AsyncSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    async with AsyncSessionLocal() as db:
+        try:
+            yield db
+        finally:
+            await db.close()
+
+async def init_db():
+    async with engine.begin() as conn:
+        # Crea las tablas (Alembic sería lo ideal para prod, pero esto recrea para dev si no existen)
+        await conn.run_sync(SQLModel.metadata.create_all)

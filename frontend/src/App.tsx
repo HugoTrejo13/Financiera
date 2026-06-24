@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import DebtsView from './components/DebtsView';
-import MortgageView from './components/MortgageView';
-import AutoLoanView from './components/AutoLoanView';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import NewsSection from './components/NewsSection';
 import Footer from './components/Footer';
 import InteractiveTour from './components/InteractiveTour';
@@ -116,11 +113,7 @@ function App() {
       <div className="min-h-screen bg-background flex flex-col">
         {renderInternalHeader()}
         <main className="flex-1 overflow-auto">
-          <Routes>
-            <Route path="/gastos" element={<DebtsView />} />
-            <Route path="/hipoteca" element={<MortgageView />} />
-            <Route path="/auto" element={<AutoLoanView />} />
-          </Routes>
+          <Outlet />
         </main>
       </div>
     );

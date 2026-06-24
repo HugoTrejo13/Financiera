@@ -2,10 +2,16 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.database import settings
+from contextlib import asynccontextmanager
+from app.database import settings, init_db
 from app.routers import debts, categories, news
 
-app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+
+app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION, lifespan=lifespan)
 
 # Configuración de CORS
 app.add_middleware(

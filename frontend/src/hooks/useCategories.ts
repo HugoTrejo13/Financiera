@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api';
 
 export interface Category {
@@ -9,22 +9,13 @@ export interface Category {
 }
 
 export const useCategories = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.get('/api/categories/');
-        setCategories(response.data);
-      } catch (error) {
-        console.error("Error al cargar categorías", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
+  const { data: categories = [], isLoading: loading } = useQuery<Category[]>({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const response = await api.get('/api/categories/');
+      return response.data;
+    },
+  });
 
   return { categories, loading };
 };

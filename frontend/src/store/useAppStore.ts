@@ -2,9 +2,7 @@ import { create } from 'zustand';
 
 interface AppState {
   isDarkMode: boolean;
-  showTutorial: boolean;
   setIsDarkMode: (val: boolean) => void;
-  setShowTutorial: (val: boolean) => void;
 }
 
 // Initial theme detection
@@ -18,7 +16,5 @@ const getInitialTheme = () => {
 
 export const useAppStore = create<AppState>((set) => ({
   isDarkMode: getInitialTheme(),
-  showTutorial: false,
-  setIsDarkMode: (val) => set({ isDarkMode: val }),
-  setShowTutorial: (val) => set({ showTutorial: val })
+  setIsDarkMode: (val) => set({ isDarkMode: val })
 }));

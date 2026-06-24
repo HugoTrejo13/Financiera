@@ -2,15 +2,14 @@ import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import NewsSection from './components/NewsSection';
 import Footer from './components/Footer';
-import InteractiveTour from './components/InteractiveTour';
-import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft, BookOpen } from 'lucide-react';
+import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft } from 'lucide-react';
 import { useAppStore } from './store/useAppStore';
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isDarkMode, setIsDarkMode, showTutorial, setShowTutorial } = useAppStore();
+  const { isDarkMode, setIsDarkMode } = useAppStore();
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -142,15 +141,6 @@ function App() {
             >
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
-
-            <button
-              onClick={() => setShowTutorial(true)}
-              className="inline-flex items-center gap-2 rounded-full text-sm font-semibold transition-all bg-muted text-foreground hover:bg-muted/80 hover:scale-105 h-9 px-5 border border-border cursor-pointer"
-              data-tour="guide-button"
-            >
-              <BookOpen className="w-4 h-4" />
-              Modo Guía
-            </button>
             
             <button
               onClick={() => navigate('/gastos')}
@@ -209,15 +199,6 @@ function App() {
         {/* CTA principal */}
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <button
-            onClick={() => setShowTutorial(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-full text-lg font-semibold transition-all bg-muted text-foreground hover:bg-muted/80 hover:scale-105 active:scale-95 h-14 px-8 border-2 border-border cursor-pointer"
-            data-tour="guide-button-hero"
-          >
-            <BookOpen className="w-5 h-5" />
-            Modo Guía
-          </button>
-          
-          <button
             onClick={() => navigate('/gastos')}
             className="inline-flex items-center justify-center gap-2 rounded-full text-lg font-bold transition-all bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 h-14 px-10 shadow-xl shadow-primary/25 cursor-pointer"
             data-tour="start-button-hero"
@@ -241,16 +222,6 @@ function App() {
       {/* ── Footer Profesional ────────────────────────────────────────────────── */}
       <Footer />
       
-      {/* ── Interactive Tour ──────────────────────────────────────────────────── */}
-      {showTutorial && (
-        <InteractiveTour
-          onComplete={() => {
-            setShowTutorial(false);
-            navigate('/gastos');
-          }}
-          onSkip={() => setShowTutorial(false)}
-        />
-      )}
     </div>
   );
 }

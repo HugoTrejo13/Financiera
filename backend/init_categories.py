@@ -23,6 +23,7 @@ async def init_categories():
         {"name": "Tecnología", "icon": "💻", "color": "#6366f1"},
         {"name": "Viajes", "icon": "✈️", "color": "#14b8a6"},
         {"name": "Servicios", "icon": "🔧", "color": "#84cc16"},
+        {"name": "Gastos hormiga", "icon": "🐜", "color": "#ef4444"},
         {"name": "Otros", "icon": "💰", "color": "#64748b"},
     ]
     

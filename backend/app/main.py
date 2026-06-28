@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 from contextlib import asynccontextmanager
 from app.database import settings, init_db
-from app.routers import debts, categories, news
+from app.routers import debts, categories, news, budgets
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -52,6 +52,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 # --- Rutas (Routers) ---
 app.include_router(categories.router)
 app.include_router(debts.router)
+app.include_router(budgets.router)
 app.include_router(news.router)
 
 @app.get("/")

@@ -2,14 +2,20 @@ import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import NewsSection from './components/NewsSection';
 import Footer from './components/Footer';
-import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft } from 'lucide-react';
+import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft, Bell } from 'lucide-react';
 import { useAppStore } from './store/useAppStore';
+import { useBudgetAlerts } from './hooks/useBudgets';
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const { isDarkMode, setIsDarkMode } = useAppStore();
+  
+  // Obtener mes actual para alertas
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const { alerts } = useBudgetAlerts(currentMonth);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -48,11 +54,100 @@ function App() {
           
           <div className="flex-1" />
           
+          {/* Campanita de notificaciones */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 rounded-full hover:bg-muted transition-colors"
+              title="Alertas de presupuesto"
+            >
+              <Bell className="w-5 h-5 text-foreground" />
+              {alerts.length > 0 && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full animate-pulse" />
+              )}
+            </button>
+            
+            {/* Panel de notificaciones */}
+            {showNotifications && (
+              <div className="absolute right-0 top-12 w-80 bg-card border border-border rounded-lg shadow-xl z-50 animate-in slide-in-from-top-2 fade-in duration-200">
+                <div className="p-4 border-b border-border">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Bell className="w-4 h-4" />
+                    Alertas de Presupuesto
+                  </h3>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {alerts.length === 0 ? (
+                    <div className="p-6 text-center text-muted-foreground">
+                      <p className="text-sm">No hay alertas activas</p>
+                      <p className="text-xs mt-1">Tus presupuestos están bajo control ✓</p>
+                    </div>
+                  ) : (
+                    <div className="p-2">
+                      {alerts.map((alert) => (
+                        <div
+                          key={alert.id}
+                          className="p-3 mb-2 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer"
+                          onClick={() => {
+                            navigate('/presupuesto');
+                            setShowNotifications(false);
+                          }}
+                        >
+                          <div className="flex items-start gap-2">
+                            <span className="text-2xl">{alert.category?.icon}</span>
+                            <div className="flex-1">
+                              <p className="font-semibold text-sm">{alert.category?.name}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {alert.is_over_budget ? (
+                                  <span className="text-destructive font-semibold">
+                                    ⚠️ Presupuesto excedido
+                                  </span>
+                                ) : (
+                                  <span className="text-yellow-600 font-semibold">
+                                    ⚠️ {alert.percentage_used.toFixed(0)}% del presupuesto usado
+                                  </span>
+                                )}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                ${alert.spent_amount.toFixed(2)} de ${alert.budget_amount.toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {alerts.length > 0 && (
+                  <div className="p-3 border-t border-border">
+                    <button
+                      onClick={() => {
+                        navigate('/presupuesto');
+                        setShowNotifications(false);
+                      }}
+                      className="w-full text-sm text-primary hover:underline"
+                    >
+                      Ver todos los presupuestos →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
           <div className="flex items-center gap-2 font-bold text-lg tracking-tight opacity-50">
             <Wallet className="w-5 h-5 text-primary" />
             Financiera
           </div>
         </div>
+        
+        {/* Overlay para cerrar notificaciones */}
+        {showNotifications && (
+          <div
+            className="fixed inset-0 top-16 z-30"
+            onClick={() => setShowNotifications(false)}
+          />
+        )}
         
         {/* Mega Menú (Dropdown Panel estilo Google) */}
         {isMenuOpen && (
@@ -62,13 +157,22 @@ function App() {
               {/* Columna 1 */}
               <div className="w-full md:w-80">
                 <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Finanzas Personales</h3>
-                <button 
-                  onClick={() => { navigate('/gastos'); setIsMenuOpen(false); }}
-                  className={`block w-full text-left p-3 rounded-lg hover:bg-muted transition-colors ${location.pathname === '/gastos' ? 'bg-primary/5 border border-primary/20 text-primary font-medium' : 'text-foreground'}`}
-                >
-                  Gestión de Gastos
-                  <p className="text-xs text-muted-foreground mt-1 font-normal">Registra tus deudas y simula pagos a meses.</p>
-                </button>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => { navigate('/gastos'); setIsMenuOpen(false); }}
+                    className={`block w-full text-left p-3 rounded-lg hover:bg-muted transition-colors ${location.pathname === '/gastos' ? 'bg-primary/5 border border-primary/20 text-primary font-medium' : 'text-foreground'}`}
+                  >
+                    Gestión de Gastos
+                    <p className="text-xs text-muted-foreground mt-1 font-normal">Registra tus deudas y simula pagos a meses.</p>
+                  </button>
+                  <button
+                    onClick={() => { navigate('/presupuesto'); setIsMenuOpen(false); }}
+                    className={`block w-full text-left p-3 rounded-lg hover:bg-muted transition-colors ${location.pathname === '/presupuesto' ? 'bg-primary/5 border border-primary/20 text-primary font-medium' : 'text-foreground'}`}
+                  >
+                    Presupuesto Mensual
+                    <p className="text-xs text-muted-foreground mt-1 font-normal">Controla tus gastos por categoría y recibe alertas.</p>
+                  </button>
+                </div>
               </div>
 
               {/* Columna 2 */}

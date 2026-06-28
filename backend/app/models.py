@@ -1,6 +1,7 @@
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
+from decimal import Decimal
 
 class CategoryBase(SQLModel):
     name: str = Field(unique=True, nullable=False)
@@ -81,3 +82,50 @@ class DebtResponse(DebtBase):
 
 class CategoryResponse(CategoryBase):
     id: int
+
+# --- Budget Models ---
+class MonthlyBudgetBase(SQLModel):
+    category_id: int = Field(foreign_key="categories.id")
+    month: str  # Format: "YYYY-MM"
+    budget_amount: float
+    spent_amount: float = 0.0
+    alert_threshold: float = 0.8  # 80% por defecto
+
+class MonthlyBudget(MonthlyBudgetBase, table=True):
+    __tablename__ = "monthly_budgets"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    
+    category: Optional[Category] = Relationship()
+
+class MonthlyBudgetCreate(SQLModel):
+    category_id: int
+    month: str
+    budget_amount: float
+    alert_threshold: float = 0.8
+
+class MonthlyBudgetUpdate(SQLModel):
+    budget_amount: Optional[float] = None
+    spent_amount: Optional[float] = None
+    alert_threshold: Optional[float] = None
+
+class MonthlyBudgetResponse(MonthlyBudgetBase):
+    id: int
+    owner_id: int
+    category: Optional[CategoryBase] = None
+    percentage_used: float = 0.0
+    is_over_budget: bool = False
+    should_alert: bool = False
+
+class CategorySpendingReport(SQLModel):
+    category_id: int
+    category_name: str
+    category_icon: str
+    category_color: str
+    total_spent: float
+    budget_amount: float
+    percentage_used: float
+    is_over_budget: bool
+    transaction_count: int

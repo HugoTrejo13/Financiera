@@ -66,6 +66,8 @@ async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db
 
 @router.put("/{debt_id}", response_model=models.DebtResponse)
 async def update_debt(debt_id: int, debt_update: models.DebtUpdate, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    from sqlalchemy.orm import selectinload
+    
     result = await db.execute(select(models.Debt).where(models.Debt.id == debt_id, models.Debt.owner_id == user_id))
     db_debt = result.scalar_one_or_none()
     if not db_debt:
@@ -77,6 +79,16 @@ async def update_debt(debt_id: int, debt_update: models.DebtUpdate, db: AsyncSes
         
     await db.commit()
     await db.refresh(db_debt)
+    
+    # Cargar la relación de categoría si existe
+    if db_debt.category_id:
+        result = await db.execute(
+            select(models.Debt)
+            .options(selectinload(models.Debt.category))
+            .where(models.Debt.id == db_debt.id)
+        )
+        db_debt = result.scalar_one()
+    
     return db_debt
 
 @router.delete("/{debt_id}")

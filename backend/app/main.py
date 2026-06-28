@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 from contextlib import asynccontextmanager
 from app.database import settings, init_db
-from app.routers import debts, categories, news, budgets
+from app.routers import debts, categories, news, budgets, auth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -54,6 +54,7 @@ app.include_router(categories.router)
 app.include_router(debts.router)
 app.include_router(budgets.router)
 app.include_router(news.router)
+app.include_router(auth.router)
 
 @app.get("/")
 def read_root():

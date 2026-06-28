@@ -8,5 +8,8 @@ psycopg2-binary
 pyjwt
 httpx
 sqlmodel
-aiosqlite
+asyncpg
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
 greenlet

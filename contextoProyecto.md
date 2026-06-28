@@ -1,3 +1,4 @@
+Lee al completo este documento antees de hacer cualquier cambio a la app.
 "Actúa como un optimizador de tokens. Restringe tus respuestas exclusivamente al grano. Elimina saludos, cortesías, explicaciones paso a paso de lo evidente y redundancias. Ve directo a la solución, código o resultado. Usa frases cortas y palabras precisas. Entrega el formato más compacto posible sin perder el contexto ni la calidad técnica de lo solicitado."
 
 # Contexto Maestro y Reglas de IA: Financiera App
@@ -15,7 +16,7 @@ Este documento es la "Biblia" del proyecto. Centraliza las instrucciones de comp
 
 1. **Leer:** Siempre inicia leyendo este archivo (`contextoProyecto.md`).
 2. **Ejecutar:** Realiza los cambios solicitados.
-3. **Actualizar:** Al finalizar, vuelve a este archivo y **ACTUALÍZALO** si se añadió, quitó o cambió alguna tecnología, funcionalidad o regla. Si no hubo cambios estructurales, déjalo igual.
+3. **Actualizar:** Al finalizar, vuelve a este archivo y **ACTUALÍZALO** si se añadió, quitó o cambió alguna tecnología, funcionalidad o regla. Si no hubo cambios estructurales, déjalo igual. Si quitaste algo, quitalo de aqui.
 
 ## 3. ¿Qué es Financiera App?
 
@@ -35,8 +36,9 @@ Es un gestor financiero personal construido para el mercado mexicano. Permite a 
 ### Backend (`/backend`)
 
 - **Core:** FastAPI (Python 3.14), Uvicorn.
-- **Base de Datos:** SQLite (`financiera.db`) vía aiosqlite (asíncrono). (Con planes futuros de migración a PostgreSQL).
+- **Base de Datos:** PostgreSQL (Local).
 - **ORM:** SQLModel y SQLAlchemy. Alembic para migraciones.
+- **Autenticación:** JWT con contraseñas encriptadas en bcrypt.
 - **Validación:** Pydantic y pydantic-settings.
 
 ## 4. Estructura de la Base de Datos
@@ -72,4 +74,4 @@ Las tablas principales son:
 ## 7. Comandos de Desarrollo
 
 - Frontend: `cd frontend && npm run dev`
-- Backend: `cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000`
+- Backend: `cd backend && source .venv/bin/activate && python3 -m uvicorn app.main:app --reload --port 8000`

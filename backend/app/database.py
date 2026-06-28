@@ -8,9 +8,12 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Financiera V2 API"
     VERSION: str = "2.0.0"
     API_V1_STR: str = "/api"
-    # Convert sqlite:/// to sqlite+aiosqlite:///
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./financiera.db")
+    # PostgreSQL Connection
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql+asyncpg://financiera_user:admin@localhost/financiera_db")
     NEWS_API_KEY: str = ""
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "fallback_secret")
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     class Config:
         env_file = ".env"

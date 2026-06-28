@@ -4,14 +4,18 @@ import NewsSection from './components/NewsSection';
 import Footer from './components/Footer';
 import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft, Bell } from 'lucide-react';
 import { useAppStore } from './store/useAppStore';
+import { useAuthStore } from './store/useAuthStore';
 import { useBudgetAlerts } from './hooks/useBudgets';
+import LoginModal from './components/auth/LoginModal';
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { isDarkMode, setIsDarkMode } = useAppStore();
+  const { isAuthenticated, logout } = useAuthStore();
   
   // Obtener mes actual para alertas
   const currentMonth = new Date().toISOString().slice(0, 7);
@@ -29,6 +33,14 @@ function App() {
   }, [isDarkMode]);
 
   const isLobby = location.pathname === '/';
+
+  const handleStart = () => {
+    if (isAuthenticated) {
+      navigate('/gastos');
+    } else {
+      setIsLoginModalOpen(true);
+    }
+  };
 
   const renderInternalHeader = () => (
     <>
@@ -135,7 +147,19 @@ function App() {
             )}
           </div>
           
-          <div className="flex items-center gap-2 font-bold text-lg tracking-tight opacity-50">
+          {isAuthenticated && (
+            <button
+              onClick={() => {
+                logout();
+                navigate('/');
+              }}
+              className="text-sm font-medium text-muted-foreground hover:text-destructive transition-colors ml-4"
+            >
+              Cerrar sesión
+            </button>
+          )}
+
+          <div className="flex items-center gap-2 font-bold text-lg tracking-tight opacity-50 ml-4">
             <Wallet className="w-5 h-5 text-primary" />
             Financiera
           </div>
@@ -247,11 +271,11 @@ function App() {
             </button>
             
             <button
-              onClick={() => navigate('/gastos')}
+              onClick={handleStart}
               className="inline-flex items-center gap-2 rounded-full text-sm font-semibold transition-all bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 h-9 px-5 shadow-md shadow-primary/20 cursor-pointer"
               data-tour="start-button"
             >
-              Comenzar
+              {isAuthenticated ? 'Ir a Gastos' : 'Comenzar'}
             </button>
           </div>
         </div>
@@ -303,11 +327,11 @@ function App() {
         {/* CTA principal */}
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <button
-            onClick={() => navigate('/gastos')}
+            onClick={handleStart}
             className="inline-flex items-center justify-center gap-2 rounded-full text-lg font-bold transition-all bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 h-14 px-10 shadow-xl shadow-primary/25 cursor-pointer"
             data-tour="start-button-hero"
           >
-            Comenzar ahora
+            {isAuthenticated ? 'Ir a mi panel' : 'Comenzar ahora'}
           </button>
         </div>
 
@@ -326,6 +350,11 @@ function App() {
       {/* ── Footer Profesional ────────────────────────────────────────────────── */}
       <Footer />
       
+      {/* ── Modal de Autenticación ────────────────────────────────────────────── */}
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
     </div>
   );
 }

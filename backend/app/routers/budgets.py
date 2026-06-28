@@ -7,20 +7,18 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app import models
+from app.auth import get_current_user
 
 router = APIRouter(prefix="/api/budgets", tags=["Budgets"])
-
-# Simulacion auth
-def get_current_user_id() -> int:
-    return 1
 
 @router.post("/", response_model=models.MonthlyBudgetResponse)
 async def create_budget(
     budget: models.MonthlyBudgetCreate, 
     db: AsyncSession = Depends(get_db), 
-    user_id: int = Depends(get_current_user_id)
+    current_user: models.User = Depends(get_current_user)
 ):
     """Crear un presupuesto mensual para una categoría"""
+    user_id = current_user.id
     
     # Verificar si ya existe un presupuesto para esta categoría y mes
     result = await db.execute(
@@ -66,9 +64,10 @@ async def create_budget(
 async def get_budgets(
     month: str = None,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    current_user: models.User = Depends(get_current_user)
 ):
     """Obtener todos los presupuestos del usuario, opcionalmente filtrados por mes"""
+    user_id = current_user.id
     
     query = select(models.MonthlyBudget).options(
         selectinload(models.MonthlyBudget.category)
@@ -125,9 +124,10 @@ async def update_budget(
     budget_id: int,
     budget_update: models.MonthlyBudgetUpdate,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    current_user: models.User = Depends(get_current_user)
 ):
     """Actualizar un presupuesto mensual"""
+    user_id = current_user.id
     
     result = await db.execute(
         select(models.MonthlyBudget).where(
@@ -169,9 +169,10 @@ async def update_budget(
 async def delete_budget(
     budget_id: int,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    current_user: models.User = Depends(get_current_user)
 ):
     """Eliminar un presupuesto mensual"""
+    user_id = current_user.id
     
     result = await db.execute(
         select(models.MonthlyBudget).where(
@@ -193,9 +194,10 @@ async def delete_budget(
 async def get_category_spending_report(
     month: str,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    current_user: models.User = Depends(get_current_user)
 ):
     """Obtener reporte de gastos por categoría para un mes específico"""
+    user_id = current_user.id
     
     # Obtener todas las categorías
     categories_result = await db.execute(select(models.Category))
@@ -261,9 +263,10 @@ async def get_category_spending_report(
 async def get_budget_alerts(
     month: str,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    current_user: models.User = Depends(get_current_user)
 ):
     """Obtener presupuestos que han alcanzado el umbral de alerta (80% por defecto)"""
+    user_id = current_user.id
     
     # Obtener todos los presupuestos del mes
     result = await db.execute(
@@ -293,9 +296,10 @@ async def get_budget_alerts(
 async def recalculate_spent_amounts(
     month: str,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    current_user: models.User = Depends(get_current_user)
 ):
     """Recalcular los montos gastados para todos los presupuestos de un mes"""
+    user_id = current_user.id
     
     # Obtener todos los presupuestos del mes
     budgets_result = await db.execute(

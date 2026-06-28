@@ -5,21 +5,18 @@ from typing import List
 
 from app.database import get_db
 from app import models
+from app.auth import get_current_user
 
 router = APIRouter(prefix="/api/debts", tags=["Debts"])
 
-# Simulacion auth
-def get_current_user_id() -> int:
-    return 1
-
 @router.get("/", response_model=List[models.DebtResponse])
-async def get_debts(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def get_debts(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     from sqlalchemy.orm import selectinload
     
     result = await db.execute(
         select(models.Debt)
         .options(selectinload(models.Debt.category))
-        .where(models.Debt.owner_id == user_id)
+        .where(models.Debt.owner_id == current_user.id)
         .offset(skip)
         .limit(limit)
     )
@@ -27,7 +24,7 @@ async def get_debts(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(
     return debts
 
 @router.post("/", response_model=models.DebtResponse)
-async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     from sqlalchemy.orm import selectinload
     
     if debt.payment_type == "contado":
@@ -47,7 +44,7 @@ async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db
         total_amount=total_amount,
         remaining_amount=total_amount,
         monthly_payment=monthly_payment,
-        owner_id=user_id
+        owner_id=current_user.id
     )
     db.add(db_debt)
     await db.commit()
@@ -65,10 +62,10 @@ async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db
     return db_debt
 
 @router.put("/{debt_id}", response_model=models.DebtResponse)
-async def update_debt(debt_id: int, debt_update: models.DebtUpdate, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def update_debt(debt_id: int, debt_update: models.DebtUpdate, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     from sqlalchemy.orm import selectinload
     
-    result = await db.execute(select(models.Debt).where(models.Debt.id == debt_id, models.Debt.owner_id == user_id))
+    result = await db.execute(select(models.Debt).where(models.Debt.id == debt_id, models.Debt.owner_id == current_user.id))
     db_debt = result.scalar_one_or_none()
     if not db_debt:
         raise HTTPException(status_code=404, detail="Deuda no encontrada")
@@ -92,8 +89,8 @@ async def update_debt(debt_id: int, debt_update: models.DebtUpdate, db: AsyncSes
     return db_debt
 
 @router.delete("/{debt_id}")
-async def delete_debt(debt_id: int, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    result = await db.execute(select(models.Debt).where(models.Debt.id == debt_id, models.Debt.owner_id == user_id))
+async def delete_debt(debt_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    result = await db.execute(select(models.Debt).where(models.Debt.id == debt_id, models.Debt.owner_id == current_user.id))
     db_debt = result.scalar_one_or_none()
     if not db_debt:
         raise HTTPException(status_code=404, detail="Deuda no encontrada")

@@ -1,72 +1,58 @@
 # Financiera App 🚀
 
 <p align="center">
-  <!-- TODO: Inserta aquí la imagen principal, logo o screenshot del dashboard de tu app -->
   <img src="/assets/demo.jpeg" alt="Financiera App Cover" width="100%">
 </p>
 
-**Financiera App** es un SaaS moderno para gestión financiera personal y colaborativa. Diseñado con una interfaz minimalista, limpia y fluida (estilo _Apple-like_), permite a los usuarios llevar un control exhaustivo de sus finanzas, gastos a meses sin intereses, y presupuestos de manera inteligente.
+**Financiera App** is a modern SaaS platform designed for personal and collaborative financial management. Its primary goal is to empower users to take absolute control of their financial health by tracking income, expenses, debts, and budgets through an intuitive and highly efficient interface. 
 
-## 🌟 Funcionalidades Principales
+The core strength of this platform lies in its ability to handle complex financial scenarios—such as interest-free monthly installments (MSI) and shared budgets—while maintaining a seamless and fast user experience.
 
-- **Gestión Avanzada:** Registro de compras de contado y a crédito (cálculo de meses sin intereses).
-- **Control de Presupuestos:** Asignación de límites mensuales por categoría con alertas automáticas.
-- **Entorno Colaborativo (Próximamente):** Comparte cuentas y metas con roomies, pareja o familia.
-- **IA Integrada (Próximamente):** Escaneo inteligente de recibos por cámara y gráficas predictivas del futuro financiero.
+## 🌟 Key Features
 
-## 🛠️ Stack Tecnológico
+- **Advanced Expense Tracking:** Accurately record both cash and credit purchases, including automated calculations for monthly installment plans.
+- **Smart Budget Control:** Assign specific monthly limits to different spending categories to prevent overspending and maintain financial discipline.
+- **Collaborative Environment (Coming Soon):** Share accounts, expenses, and financial goals with roommates, partners, or family members in real-time.
+- **AI Integration (Coming Soon):** Smart receipt scanning via camera and predictive analytics to forecast future financial health.
+
+## 🛠️ Tech Stack
 
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4, Zustand.
 - **Backend:** FastAPI (Python), PostgreSQL, SQLModel.
-- **Seguridad:** Autenticación JWT (JSON Web Tokens) con cifrado bcrypt puro.
-- **Infraestructura:** Docker & Docker Compose.
+- **Security:** JSON Web Tokens (JWT) authentication with pure bcrypt encryption.
+- **Infrastructure:** Docker & Docker Compose for isolated and reproducible environments.
 
 ---
 
-## 📚 Arquitectura y Documentación
+## 📚 Architecture & Documentation
 
-Para decisiones técnicas, flujos, y arquitectura profunda de la base de datos, por favor lee los documentos maestros ubicados en la carpeta `/docs` (PRD, TRD, Schema, etc.). Todo nuevo desarrollo debe apegarse al `/docs/Implementation_Plan.md`.
-
----
-
-## ⚙️ Requisitos Previos (Para Desarrolladores)
-
-1. **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** instalado y corriendo.
-2. **[Node.js](https://nodejs.org/)** (v18 o superior).
+For technical decisions, user flows, and deep database architecture, please refer to the master documents located in the `/docs` folder (PRD, TRD, Schema, etc.). All new development must adhere to the roadmap defined in `/docs/Implementation_Plan.md`.
 
 ---
 
-## 🏃 Cómo levantar el proyecto localmente
+## ⚙️ Prerequisites (For Developers)
 
-Cualquier desarrollador que clone este repositorio puede ejecutar la app en segundos:
+1. **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** installed and running.
+2. **[Node.js](https://nodejs.org/)** (v18 or higher).
 
-### Paso 1: Levantar Backend y Base de Datos (Docker)
+---
 
-Abre la terminal en la raíz del proyecto y ejecuta:
+## 🏃 How to Run the Project Locally
 
+Any developer cloning this repository can have the app running in seconds by following these two steps:
+
+### Step 1: Start the Backend and Database (Docker)
+Open a terminal in the root directory of the project and run:
 ```bash
 docker compose up --build -d
 ```
+> This will download PostgreSQL, build the FastAPI server, and connect them internally. The API will be up and running at `http://localhost:8000`.
 
-> Esto descarga PostgreSQL, compila el servidor de FastAPI y los conecta internamente. La API quedará corriendo en `http://localhost:8000`.
-
-### Paso 2: Levantar el Frontend (React)
-
-Abre otra terminal, entra a la carpeta del frontend e inicia la interfaz:
-
+### Step 2: Start the Frontend (React)
+Open a separate terminal window, navigate to the frontend folder, and start the user interface:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-> La interfaz web estará disponible en `http://localhost:5173`.
-
----
-
-## 🗄️ Acceso a la Base de Datos (GUI)
-
-Si necesitas administrar las tablas visualmente usando clientes como TablePlus o DBeaver, conéctate con estas credenciales:
-
-- **Host:** `localhost` | **Port:** `5432`
-- **User:** `financiera_user` | **Password:** `admin` | **Database:** `financiera_db`
+> The web interface will be available at `http://localhost:5173`.

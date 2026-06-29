@@ -1,82 +1,72 @@
-<div align="center">
-  <h1>Financiera</h1>
-  <p>A smart personal finance tracker with automated currency conversion and amortization schedules.</p>
+# Financiera App 🚀
 
-  [![Status](https://img.shields.io/badge/Status-In%20development-orange?style=flat-square)](#)
-  [![License](https://img.shields.io/badge/License-None-lightgrey?style=flat-square)](#)
-  [![GitHub](https://img.shields.io/badge/GitHub-HugoTrejo13-181717?style=flat-square&logo=github)](#)
-</div>
+<p align="center">
+  <!-- TODO: Inserta aquí la imagen principal, logo o screenshot del dashboard de tu app -->
+  <img src="/assets/demo.jpeg" alt="Financiera App Cover" width="100%">
+</p>
 
-![Demo](./assets/demo.jpeg)
+**Financiera App** es un SaaS moderno para gestión financiera personal y colaborativa. Diseñado con una interfaz minimalista, limpia y fluida (estilo _Apple-like_), permite a los usuarios llevar un control exhaustivo de sus finanzas, gastos a meses sin intereses, y presupuestos de manera inteligente.
 
-## 📖 About
-Financiera is a personal finance application built to help users take control of their expenses and debts without dealing with confusing spreadsheets. It automatically calculates interest rates, builds payment timelines for installment purchases, and fetches real-time currency exchange rates. It solves the problem of tracking complex liabilities by providing a clean, centralized, and visual dashboard.
+## 🌟 Funcionalidades Principales
 
-## ✨ Features
-- **Track** cash purchases and installment debts (with or without interest).
-- **Categorize** expenses with visual icons and colors for better organization.
-- **Visualize** spending patterns with interactive pie charts grouped by category.
-- **Calculate** automatic amortization schedules and timeline progress for active debts.
-- **Convert** USD to MXN dynamically using the real-time Frankfurter API.
-- **Edit** existing financial records seamlessly through a robust centered modal interface.
-- **Filter** expenses by date range to analyze specific periods.
-- **Read** filtered real-time economic and financial news directly from the dashboard.
+- **Gestión Avanzada:** Registro de compras de contado y a crédito (cálculo de meses sin intereses).
+- **Control de Presupuestos:** Asignación de límites mensuales por categoría con alertas automáticas.
+- **Entorno Colaborativo (Próximamente):** Comparte cuentas y metas con roomies, pareja o familia.
+- **IA Integrada (Próximamente):** Escaneo inteligente de recibos por cámara y gráficas predictivas del futuro financiero.
 
-## 🛠 Tech Stack
+## 🛠️ Stack Tecnológico
 
-**Frontend**  
-![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-B73BFE?style=flat-square&logo=vite&logoColor=FFD62E)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)
+- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4, Zustand.
+- **Backend:** FastAPI (Python), PostgreSQL, SQLModel.
+- **Seguridad:** Autenticación JWT (JSON Web Tokens) con cifrado bcrypt puro.
+- **Infraestructura:** Docker & Docker Compose.
 
-**Backend**  
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
-![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-07405E?style=flat-square&logo=sqlite&logoColor=white)
+---
 
-## 🚀 Getting Started
+## 📚 Arquitectura y Documentación
 
-### Prerequisites
-- Node.js (v18+)
-- Python (3.9+)
+Para decisiones técnicas, flujos, y arquitectura profunda de la base de datos, por favor lee los documentos maestros ubicados en la carpeta `/docs` (PRD, TRD, Schema, etc.). Todo nuevo desarrollo debe apegarse al `/docs/Implementation_Plan.md`.
 
-### Installation
+---
+
+## ⚙️ Requisitos Previos (Para Desarrolladores)
+
+1. **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** instalado y corriendo.
+2. **[Node.js](https://nodejs.org/)** (v18 o superior).
+
+---
+
+## 🏃 Cómo levantar el proyecto localmente
+
+Cualquier desarrollador que clone este repositorio puede ejecutar la app en segundos:
+
+### Paso 1: Levantar Backend y Base de Datos (Docker)
+
+Abre la terminal en la raíz del proyecto y ejecuta:
 
 ```bash
-# Clone the repository
-git clone https://github.com/HugoTrejo13/Financiera.git
-cd Financiera
+docker compose up --build -d
+```
 
-# Setup Backend
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+> Esto descarga PostgreSQL, compila el servidor de FastAPI y los conecta internamente. La API quedará corriendo en `http://localhost:8000`.
 
-# Initialize default categories (run once)
-python init_categories.py
+### Paso 2: Levantar el Frontend (React)
 
-# Start backend server
-uvicorn app.main:app --reload
+Abre otra terminal, entra a la carpeta del frontend e inicia la interfaz:
 
-# Setup Frontend (in a new terminal)
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### Usage
-```bash
-# Open your browser and navigate to http://localhost:5173
-# 1. Add a new expense by clicking "Nueva compra"
-# 2. Select a category (Food, Transport, etc.)
-# 3. Choose payment type (cash or installments)
-# 4. For USD purchases, watch the exchange rate auto-fill
-# 5. View your expense breakdown by category in the interactive chart
-```
+> La interfaz web estará disponible en `http://localhost:5173`.
 
-## 📬 Contact
-**Hugo Trejo**  
-[![GitHub](https://img.shields.io/badge/GitHub-HugoTrejo13-181717?style=flat-square&logo=github)](https://github.com/HugoTrejo13)
+---
+
+## 🗄️ Acceso a la Base de Datos (GUI)
+
+Si necesitas administrar las tablas visualmente usando clientes como TablePlus o DBeaver, conéctate con estas credenciales:
+
+- **Host:** `localhost` | **Port:** `5432`
+- **User:** `financiera_user` | **Password:** `admin` | **Database:** `financiera_db`

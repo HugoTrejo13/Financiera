@@ -18,11 +18,14 @@ const queryClient = new QueryClient({
   },
 })
 
+import Dashboard from './pages/Dashboard'
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
+      { path: "dashboard", element: <Dashboard /> },
       { path: "gastos", element: <DebtsView /> },
       { path: "presupuesto", element: <BudgetManager /> },
       { path: "hipoteca", element: <MortgageView /> },

@@ -36,7 +36,7 @@ function App() {
 
   const handleStart = () => {
     if (isAuthenticated) {
-      navigate('/gastos');
+      navigate('/dashboard');
     } else {
       setIsLoginModalOpen(true);
     }
@@ -182,6 +182,13 @@ function App() {
               <div className="w-full md:w-80">
                 <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Finanzas Personales</h3>
                 <div className="space-y-2">
+                  <button
+                    onClick={() => { navigate('/dashboard'); setIsMenuOpen(false); }}
+                    className={`block w-full text-left p-3 rounded-lg hover:bg-muted transition-colors ${location.pathname === '/dashboard' ? 'bg-primary/5 border border-primary/20 text-primary font-medium' : 'text-foreground'}`}
+                  >
+                    Resumen y Analíticas
+                    <p className="text-xs text-muted-foreground mt-1 font-normal">Vista general de tu salud financiera.</p>
+                  </button>
                   <button
                     onClick={() => { navigate('/gastos'); setIsMenuOpen(false); }}
                     className={`block w-full text-left p-3 rounded-lg hover:bg-muted transition-colors ${location.pathname === '/gastos' ? 'bg-primary/5 border border-primary/20 text-primary font-medium' : 'text-foreground'}`}

@@ -71,7 +71,13 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
         if (!res.ok) {
           const errorData = await res.json();
-          throw new Error(errorData.detail || 'Error al registrar usuario');
+          let errorMessage = 'Error al registrar usuario';
+          if (Array.isArray(errorData.detail) && errorData.detail.length > 0) {
+            errorMessage = errorData.detail[0].msg.replace('Value error, ', '');
+          } else if (typeof errorData.detail === 'string') {
+            errorMessage = errorData.detail;
+          }
+          throw new Error(errorMessage);
         }
         
         setIsLogin(true);

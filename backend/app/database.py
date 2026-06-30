@@ -20,6 +20,10 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+limiter = Limiter(key_func=get_remote_address)
+
 engine = create_async_engine(
     settings.DATABASE_URL, 
     connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}

@@ -24,10 +24,9 @@ Este documento es la brújula técnica. Define en qué orden se deben construir 
   - Gastos por categoría.
   - Progreso del presupuesto vs Gasto real.
 
-### Fase 9: Metas de Inversión (Individual y Compartidas)
-
-- Construir modelo y rutas para Metas de ahorro.
-- Modo colaborativo: Lógica para compartir "Espacios" (Roomies, familia, pareja).
+### Fase 9: Metas de Inversión (Individual y Compartidas) ✅
+- Construir modelo y rutas para Metas de ahorro. (Completado)
+- Modo colaborativo: Lógica para compartir "Espacios" (Roomies, familia, pareja). (Completado)
 
 ### Fase 10: IA y Reconocimiento Visual
 

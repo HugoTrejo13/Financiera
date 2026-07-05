@@ -24,6 +24,9 @@ class User(SQLModel, table=True):
 
     debts: List["Debt"] = Relationship(back_populates="owner")
     investment_plans: List["InvestmentPlan"] = Relationship(back_populates="owner")
+    spaces_owned: List["Space"] = Relationship(back_populates="owner")
+    space_memberships: List["SpaceMember"] = Relationship(back_populates="user")
+    investment_transactions: List["InvestmentTransaction"] = Relationship(back_populates="user")
 
 class DebtBase(SQLModel):
     description: str
@@ -48,19 +51,59 @@ class Debt(DebtBase, table=True):
     owner: Optional[User] = Relationship(back_populates="debts")
     category: Optional[Category] = Relationship(back_populates="debts")
 
-class InvestmentPlan(SQLModel, table=True):
-    __tablename__ = "investment_plans"
+class Space(SQLModel, table=True):
+    __tablename__ = "spaces"
     id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    owner_id: int = Field(foreign_key="users.id")
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
+    owner: Optional["User"] = Relationship(back_populates="spaces_owned")
+    members: List["SpaceMember"] = Relationship(back_populates="space")
+    investment_plans: List["InvestmentPlan"] = Relationship(back_populates="space")
+
+class SpaceMember(SQLModel, table=True):
+    __tablename__ = "space_members"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    space_id: int = Field(foreign_key="spaces.id")
+    user_id: int = Field(foreign_key="users.id")
+    role: str = Field(default="member") # owner, admin, member
+    joined_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
+    space: Optional[Space] = Relationship(back_populates="members")
+    user: Optional["User"] = Relationship(back_populates="space_memberships")
+
+class InvestmentPlanBase(SQLModel):
     name: str
     target_amount: float
     current_amount: float = 0.0
-    monthly_contribution: float
-    expected_return_rate: float
+    monthly_contribution: float = 0.0
+    expected_return_rate: float = 0.0
     target_date: str
+    icon: str = "PiggyBank"
+    color: str = "#10b981"
+    space_id: Optional[int] = Field(default=None, foreign_key="spaces.id")
+
+class InvestmentPlan(InvestmentPlanBase, table=True):
+    __tablename__ = "investment_plans"
+    id: Optional[int] = Field(default=None, primary_key=True)
     owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
-    owner: Optional[User] = Relationship(back_populates="investment_plans")
+    owner: Optional["User"] = Relationship(back_populates="investment_plans")
+    space: Optional[Space] = Relationship(back_populates="investment_plans")
+    transactions: List["InvestmentTransaction"] = Relationship(back_populates="plan")
+
+class InvestmentTransaction(SQLModel, table=True):
+    __tablename__ = "investment_transactions"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    plan_id: int = Field(foreign_key="investment_plans.id")
+    user_id: int = Field(foreign_key="users.id")
+    amount: float
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
+    plan: Optional[InvestmentPlan] = Relationship(back_populates="transactions")
+    user: Optional["User"] = Relationship(back_populates="investment_transactions")
 
 # --- Schemas ---
 class DebtCreate(DebtBase):
@@ -82,6 +125,39 @@ class DebtResponse(DebtBase):
 
 class CategoryResponse(CategoryBase):
     id: int
+
+class SpaceCreate(SQLModel):
+    name: str
+
+class SpaceResponse(SQLModel):
+    id: int
+    name: str
+    owner_id: int
+    created_at: datetime
+
+class InvestmentPlanCreate(InvestmentPlanBase):
+    pass
+
+class InvestmentPlanUpdate(SQLModel):
+    name: Optional[str] = None
+    target_amount: Optional[float] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+
+class InvestmentPlanResponse(InvestmentPlanBase):
+    id: int
+    owner_id: Optional[int]
+    created_at: datetime
+
+class InvestmentTransactionCreate(SQLModel):
+    amount: float
+
+class InvestmentTransactionResponse(SQLModel):
+    id: int
+    plan_id: int
+    user_id: int
+    amount: float
+    created_at: datetime
 
 # --- Budget Models ---
 class MonthlyBudgetBase(SQLModel):

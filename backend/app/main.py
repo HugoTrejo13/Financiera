@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 from contextlib import asynccontextmanager
 from app.database import settings, init_db
-from app.routers import debts, categories, news, budgets, auth
+from app.routers import debts, categories, news, budgets, auth, spaces, investments
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -62,6 +62,8 @@ app.include_router(debts.router)
 app.include_router(budgets.router)
 app.include_router(news.router)
 app.include_router(auth.router)
+app.include_router(spaces.router)
+app.include_router(investments.router)
 
 @app.get("/")
 def read_root():

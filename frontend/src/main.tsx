@@ -19,6 +19,7 @@ const queryClient = new QueryClient({
 })
 
 import Dashboard from './pages/Dashboard'
+import MetasView from './pages/MetasView'
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: "dashboard", element: <Dashboard /> },
       { path: "gastos", element: <DebtsView /> },
       { path: "presupuesto", element: <BudgetManager /> },
+      { path: "metas", element: <MetasView /> },
       { path: "hipoteca", element: <MortgageView /> },
       { path: "auto", element: <AutoLoanView /> },
     ],

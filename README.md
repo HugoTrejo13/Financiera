@@ -4,7 +4,7 @@
   <img src="/assets/demo.jpeg" alt="Financiera App Cover" width="100%">
 </p>
 
-**Financiera App** is a modern SaaS platform designed for personal and collaborative financial management. Its primary goal is to empower users to take absolute control of their financial health by tracking income, expenses, debts, and budgets through an intuitive and highly efficient interface. 
+**Financiera App** is a modern SaaS platform designed for personal and collaborative financial management. Its primary goal is to empower users to take absolute control of their financial health by tracking income, expenses, debts, and budgets through an intuitive and highly efficient interface.
 
 The core strength of this platform lies in its ability to handle complex financial scenarios—such as interest-free monthly installments (MSI) and shared budgets—while maintaining a seamless and fast user experience.
 
@@ -42,17 +42,23 @@ For technical decisions, user flows, and deep database architecture, please refe
 Any developer cloning this repository can have the app running in seconds by following these two steps:
 
 ### Step 1: Start the Backend and Database (Docker)
+
 Open a terminal in the root directory of the project and run:
+
 ```bash
 docker compose up --build -d
 ```
+
 > This will download PostgreSQL, build the FastAPI server, and connect them internally. The API will be up and running at `http://localhost:8000`.
 
 ### Step 2: Start the Frontend (React)
-Open a separate terminal window, navigate to the frontend folder, and start the user interface:
+
+Open a separate terminal window navigate to the frontend folder, and start the user interface:
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
 > The web interface will be available at `http://localhost:5173`.

@@ -64,7 +64,7 @@ export default function DebtTable({
     <div className="lg:col-span-2 rounded-xl border bg-card text-card-foreground shadow-md p-6">
       <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
         <div>
-          <h3 className="font-semibold leading-none tracking-tight">Tus gastos</h3>
+          <h3 className="font-semibold leading-none tracking-tight">Tus compras</h3>
           <p className="text-sm text-muted-foreground mt-1">Visualiza y gestiona tus pasivos/activos actuales.</p>
         </div>
         {filterMode === 'range' && (

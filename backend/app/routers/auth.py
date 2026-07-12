@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from ..database import get_db
-from ..models import User
+from ..models import User, UserProfileUpdate, UserPasswordUpdate
 from ..auth import verify_password, get_password_hash, create_access_token, get_current_user
 from pydantic import BaseModel, field_validator
 import re
@@ -74,4 +74,36 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 
 @router.get("/me")
 async def get_me(current_user: User = Depends(get_current_user)):
-    return {"id": current_user.id, "email": current_user.email}
+    return {
+        "id": current_user.id, 
+        "email": current_user.email,
+        "alias": current_user.alias,
+        "photo_url": current_user.photo_url
+    }
+
+@router.put("/me/profile")
+async def update_profile(profile_data: UserProfileUpdate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if profile_data.alias is not None:
+        current_user.alias = profile_data.alias
+    if profile_data.photo_url is not None:
+        current_user.photo_url = profile_data.photo_url
+    db.add(current_user)
+    await db.commit()
+    await db.refresh(current_user)
+    return {"message": "Profile updated successfully", "alias": current_user.alias, "photo_url": current_user.photo_url}
+
+@router.put("/me/password")
+async def update_password(password_data: UserPasswordUpdate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not verify_password(password_data.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Contraseña actual incorrecta")
+    
+    # Valida usando la misma lógica de registro
+    try:
+        UserCreate.validate_password(password_data.new_password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+        
+    current_user.hashed_password = get_password_hash(password_data.new_password)
+    db.add(current_user)
+    await db.commit()
+    return {"message": "Password updated successfully"}

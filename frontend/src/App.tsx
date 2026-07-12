@@ -2,24 +2,18 @@ import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import NewsSection from './components/NewsSection';
 import Footer from './components/Footer';
-import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft, Bell, UserCircle, Calendar, Target } from 'lucide-react';
+import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft } from 'lucide-react';
 import { useAppStore } from './store/useAppStore';
 import { useAuthStore } from './store/useAuthStore';
-import { useBudgetAlerts } from './hooks/useBudgets';
 import LoginModal from './components/auth/LoginModal';
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { isDarkMode, setIsDarkMode } = useAppStore();
   const { isAuthenticated, logout } = useAuthStore();
-  
-  // Obtener mes actual para alertas
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const { alerts } = useBudgetAlerts(currentMonth);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -46,7 +40,7 @@ function App() {
     <>
       <header className="w-full bg-card border-b border-border h-16 flex items-center relative z-50 shadow-sm">
         <div className="w-full px-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4 flex-1">
             <button
               onClick={() => navigate('/')}
               className="text-muted-foreground hover:bg-muted hover:text-foreground p-2 rounded-full transition-colors"
@@ -54,6 +48,9 @@ function App() {
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
+          </div>
+          
+          <div className="hidden md:flex items-center gap-6 mr-4">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="flex items-center gap-2 text-foreground font-semibold hover:text-primary transition-colors"
@@ -64,93 +61,21 @@ function App() {
                 <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
               </svg>
             </button>
-          </div>
-          
-          <div className="hidden md:flex flex-1 items-center justify-center">
-            <span className="font-bold text-xs tracking-widest uppercase text-muted-foreground opacity-50">Resumen Financiero</span>
+            <button 
+              onClick={() => { navigate('/dashboard'); setIsMenuOpen(false); }}
+              className={`font-bold text-sm transition-colors ${location.pathname === '/dashboard' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              Perfil
+            </button>
+            <button 
+              onClick={() => { navigate('/gastos'); setIsMenuOpen(false); }}
+              className={`font-bold text-sm transition-colors ${location.pathname === '/gastos' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              Gestión de Compras
+            </button>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Campanita de notificaciones */}
-            <div className="relative">
-              <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 rounded-full hover:bg-muted transition-colors"
-              title="Alertas de presupuesto"
-            >
-              <Bell className="w-5 h-5 text-foreground" />
-              {alerts.length > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full animate-pulse" />
-              )}
-            </button>
-            
-            {/* Panel de notificaciones */}
-            {showNotifications && (
-              <div className="absolute right-0 top-12 w-80 bg-card border border-border rounded-lg shadow-xl z-50 animate-in slide-in-from-top-2 fade-in duration-200">
-                <div className="p-4 border-b border-border">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    <Bell className="w-4 h-4" />
-                    Alertas de Presupuesto
-                  </h3>
-                </div>
-                <div className="max-h-96 overflow-y-auto">
-                  {alerts.length === 0 ? (
-                    <div className="p-6 text-center text-muted-foreground">
-                      <p className="text-sm">No hay alertas activas</p>
-                      <p className="text-xs mt-1">Tus presupuestos están bajo control ✓</p>
-                    </div>
-                  ) : (
-                    <div className="p-2">
-                      {alerts.map((alert) => (
-                        <div
-                          key={alert.id}
-                          className="p-3 mb-2 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer"
-                          onClick={() => {
-                            navigate('/presupuesto');
-                            setShowNotifications(false);
-                          }}
-                        >
-                          <div className="flex items-start gap-2">
-                            <span className="text-2xl">{alert.category?.icon}</span>
-                            <div className="flex-1">
-                              <p className="font-semibold text-sm">{alert.category?.name}</p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {alert.is_over_budget ? (
-                                  <span className="text-destructive font-semibold">
-                                    ⚠️ Presupuesto excedido
-                                  </span>
-                                ) : (
-                                  <span className="text-yellow-600 font-semibold">
-                                    ⚠️ {alert.percentage_used.toFixed(0)}% del presupuesto usado
-                                  </span>
-                                )}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                ${alert.spent_amount.toFixed(2)} de ${alert.budget_amount.toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {alerts.length > 0 && (
-                  <div className="p-3 border-t border-border">
-                    <button
-                      onClick={() => {
-                        navigate('/presupuesto');
-                        setShowNotifications(false);
-                      }}
-                      className="w-full text-sm text-primary hover:underline"
-                    >
-                      Ver todos los presupuestos →
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
           
           {isAuthenticated && (
             <button
@@ -171,55 +96,14 @@ function App() {
         </div>
       </div>
         
-      {/* Overlay para cerrar notificaciones */}
-        {showNotifications && (
-          <div
-            className="fixed inset-0 top-16 z-30"
-            onClick={() => setShowNotifications(false)}
-          />
-        )}
+
         
         {/* Mega Menú (Dropdown Panel estilo Google) */}
         {isMenuOpen && (
           <div className="absolute top-16 left-0 w-full bg-card border-b border-border shadow-lg z-40 animate-in slide-in-from-top-2 fade-in duration-200">
             <div className="flex flex-col md:flex-row justify-center gap-8 px-4 py-8">
               
-              {/* Columna 1 */}
-              <div className="w-full md:w-80">
-                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Finanzas Personales</h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => { navigate('/dashboard'); setIsMenuOpen(false); }}
-                    className={`block w-full text-left p-3 rounded-lg hover:bg-muted transition-colors ${location.pathname === '/dashboard' ? 'bg-primary/5 border border-primary/20 text-primary font-medium' : 'text-foreground'}`}
-                  >
-                    Resumen y Analíticas
-                    <p className="text-xs text-muted-foreground mt-1 font-normal">Vista general de tu salud financiera.</p>
-                  </button>
-                  <button
-                    onClick={() => { navigate('/gastos'); setIsMenuOpen(false); }}
-                    className={`block w-full text-left p-3 rounded-lg hover:bg-muted transition-colors ${location.pathname === '/gastos' ? 'bg-primary/5 border border-primary/20 text-primary font-medium' : 'text-foreground'}`}
-                  >
-                    Gestión de Gastos
-                    <p className="text-xs text-muted-foreground mt-1 font-normal">Registra tus deudas y simula pagos a meses.</p>
-                  </button>
-                  <button
-                    onClick={() => { navigate('/presupuesto'); setIsMenuOpen(false); }}
-                    className={`block w-full text-left p-3 rounded-lg hover:bg-muted transition-colors ${location.pathname === '/presupuesto' ? 'bg-primary/5 border border-primary/20 text-primary font-medium' : 'text-foreground'}`}
-                  >
-                    Presupuesto Mensual
-                    <p className="text-xs text-muted-foreground mt-1 font-normal">Controla tus gastos por categoría y recibe alertas.</p>
-                  </button>
-                  <button
-                    onClick={() => { navigate('/metas'); setIsMenuOpen(false); }}
-                    className={`block w-full text-left p-3 rounded-lg hover:bg-muted transition-colors ${location.pathname === '/metas' ? 'bg-primary/5 border border-primary/20 text-primary font-medium' : 'text-foreground'}`}
-                  >
-                    Metas de Ahorro
-                    <p className="text-xs text-muted-foreground mt-1 font-normal">Ahorra solo o con tus amigos/pareja.</p>
-                  </button>
-                </div>
-              </div>
-
-              {/* Columna 2 */}
+              {/* Columna de Créditos */}
               <div className="w-full md:w-80">
                 <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Créditos</h3>
                 <div className="space-y-2">
@@ -260,50 +144,6 @@ function App() {
       <div className="min-h-screen bg-background flex flex-col overflow-hidden">
         {renderInternalHeader()}
         <div className="flex-1 flex overflow-hidden max-w-[1400px] mx-auto w-full">
-          {/* Sidebar Izquierdo (Fase 2 Layout) */}
-          <aside className="w-80 flex-shrink-0 p-6 hidden lg:flex flex-col gap-6 overflow-y-auto border-r border-border/50 bg-card/10">
-            {/* Tarjeta 1: Foto de Perfil */}
-            <div className="bg-card/50 backdrop-blur-xl border border-border/50 p-6 rounded-3xl shadow-sm flex flex-col items-center text-center transition-all hover:shadow-md">
-              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <UserCircle className="w-16 h-16 text-primary" />
-              </div>
-              <h2 className="font-bold text-lg">Usuario Financiera</h2>
-              <p className="text-sm text-muted-foreground">usuario@ejemplo.com</p>
-              <div className="mt-4 px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-xs font-bold uppercase tracking-wider">
-                Ahorrador Activo
-              </div>
-            </div>
-
-            {/* Tarjeta 2: Más Datos */}
-            <div className="bg-card/50 backdrop-blur-xl border border-border/50 p-6 rounded-3xl shadow-sm flex flex-col gap-5 transition-all hover:shadow-md">
-              <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Tu Actividad</h3>
-              
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 rounded-xl"><Calendar className="w-4 h-4 text-blue-500" /></div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Miembro desde</p>
-                  <p className="text-sm font-semibold">2026</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/10 rounded-xl"><ShieldCheck className="w-4 h-4 text-purple-500" /></div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Estado de Cuenta</p>
-                  <p className="text-sm font-semibold text-green-500">Verificado</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Navegación Adicional Sidebar */}
-            <div className="bg-card/50 backdrop-blur-xl border border-border/50 p-4 rounded-3xl shadow-sm flex flex-col gap-2 mt-auto">
-              <button onClick={() => navigate('/metas')} className={`flex items-center gap-3 p-3 rounded-xl transition-all ${location.pathname === '/metas' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-foreground'}`}>
-                <Target className="w-5 h-5" />
-                <span className="font-semibold text-sm">Tus Metas de Ahorro</span>
-              </button>
-            </div>
-          </aside>
-
           {/* Main Content */}
           <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-background/50">
             <Outlet />
@@ -374,7 +214,7 @@ function App() {
           </h1>
           
           <p className="text-lg text-muted-foreground max-w-xl leading-relaxed font-medium">
-            Es la plataforma de bienestar financiero que te permite registrar tus gastos, simular créditos y establecer presupuestos para alcanzar tu libertad económica.
+            Es la plataforma de bienestar financiero que te permite registrar tus compras, simular créditos y establecer presupuestos para alcanzar tu libertad económica.
           </p>
           
           <div className="pt-4 flex items-center gap-4">

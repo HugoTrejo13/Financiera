@@ -1,5 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import type { CategorySpendingReport } from '../../hooks/useBudgets';
+import type { CategorySpendingReport } from '../../hooks/useCategories';
 
 interface Props {
   data: CategorySpendingReport[];
@@ -17,7 +17,7 @@ export default function ExpenseDonutChart({ data }: Props) {
   if (chartData.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground text-sm bg-muted/20 rounded-2xl">
-        No hay gastos registrados este mes
+        No hay compras registradas este mes
       </div>
     );
   }
@@ -41,7 +41,7 @@ export default function ExpenseDonutChart({ data }: Props) {
             ))}
           </Pie>
           <Tooltip 
-            formatter={(value: number) => [`$${value.toFixed(2)}`, 'Gasto']}
+            formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Compra']}
             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
           />
           <Legend verticalAlign="bottom" height={36} iconType="circle" />

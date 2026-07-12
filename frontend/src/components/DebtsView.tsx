@@ -77,7 +77,7 @@ export default function DebtsView() {
       <header className="mb-8 pr-16">
         <h1 className="text-3xl font-bold flex items-center gap-3 tracking-tight">
           <Wallet className="text-primary w-8 h-8" />
-          GESTIÓN DE GASTOS
+          GESTIÓN DE COMPRAS
         </h1>
         <p className="text-muted-foreground mt-2">Administra tus pasivos/activos y simula tus planes de pago de manera eficiente.</p>
       </header>

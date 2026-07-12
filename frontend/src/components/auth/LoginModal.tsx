@@ -61,7 +61,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         const data = await res.json();
         setToken(data.access_token);
         onClose();
-        navigate('/gastos');
+        navigate('/dashboard');
       } else {
         const res = await fetch(`${API_URL}/auth/register`, {
           method: 'POST',
@@ -93,7 +93,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         const loginData = await loginRes.json();
         setToken(loginData.access_token);
         onClose();
-        navigate('/gastos');
+        navigate('/dashboard');
       }
     } catch (err: any) {
       setError(err.message);

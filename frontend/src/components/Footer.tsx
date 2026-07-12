@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
           </div>
           <p className="text-slate-400 max-w-sm mb-6 leading-relaxed">
             Tu gestor financiero personal hecho para México. 
-            Registra gastos, simula pagos a meses y mantén el control real de tu dinero sin complicaciones.
+            Registra compras, simula pagos a meses y mantén el control real de tu dinero sin complicaciones.
           </p>
           <div className="flex items-center gap-4">
             <a href="#" className="text-slate-500 hover:text-white transition-colors"><MessageCircle className="w-5 h-5" /></a>

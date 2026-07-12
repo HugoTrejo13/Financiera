@@ -7,8 +7,6 @@ import App from './App.tsx'
 import DebtsView from './components/DebtsView'
 import MortgageView from './components/MortgageView'
 import AutoLoanView from './components/AutoLoanView'
-import BudgetManager from './components/BudgetManager'
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -19,8 +17,6 @@ const queryClient = new QueryClient({
 })
 
 import Dashboard from './pages/Dashboard'
-import MetasView from './pages/MetasView'
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -28,8 +24,6 @@ const router = createBrowserRouter([
     children: [
       { path: "dashboard", element: <Dashboard /> },
       { path: "gastos", element: <DebtsView /> },
-      { path: "presupuesto", element: <BudgetManager /> },
-      { path: "metas", element: <MetasView /> },
       { path: "hipoteca", element: <MortgageView /> },
       { path: "auto", element: <AutoLoanView /> },
     ],

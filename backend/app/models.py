@@ -20,13 +20,13 @@ class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     email: str = Field(unique=True, index=True, nullable=False)
     hashed_password: str = Field(nullable=False)
+    alias: Optional[str] = Field(default=None)
+    photo_url: Optional[str] = Field(default=None)
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
     debts: List["Debt"] = Relationship(back_populates="owner")
-    investment_plans: List["InvestmentPlan"] = Relationship(back_populates="owner")
     spaces_owned: List["Space"] = Relationship(back_populates="owner")
     space_memberships: List["SpaceMember"] = Relationship(back_populates="user")
-    investment_transactions: List["InvestmentTransaction"] = Relationship(back_populates="user")
 
 class DebtBase(SQLModel):
     description: str
@@ -60,7 +60,6 @@ class Space(SQLModel, table=True):
 
     owner: Optional["User"] = Relationship(back_populates="spaces_owned")
     members: List["SpaceMember"] = Relationship(back_populates="space")
-    investment_plans: List["InvestmentPlan"] = Relationship(back_populates="space")
 
 class SpaceMember(SQLModel, table=True):
     __tablename__ = "space_members"
@@ -73,41 +72,19 @@ class SpaceMember(SQLModel, table=True):
     space: Optional[Space] = Relationship(back_populates="members")
     user: Optional["User"] = Relationship(back_populates="space_memberships")
 
-class InvestmentPlanBase(SQLModel):
-    name: str
-    target_amount: float
-    current_amount: float = 0.0
-    monthly_contribution: float = 0.0
-    expected_return_rate: float = 0.0
-    target_date: str
-    icon: str = "PiggyBank"
-    color: str = "#10b981"
-    space_id: Optional[int] = Field(default=None, foreign_key="spaces.id")
 
-class InvestmentPlan(InvestmentPlanBase, table=True):
-    __tablename__ = "investment_plans"
-    id: Optional[int] = Field(default=None, primary_key=True)
-    owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
-    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
-
-    owner: Optional["User"] = Relationship(back_populates="investment_plans")
-    space: Optional[Space] = Relationship(back_populates="investment_plans")
-    transactions: List["InvestmentTransaction"] = Relationship(back_populates="plan")
-
-class InvestmentTransaction(SQLModel, table=True):
-    __tablename__ = "investment_transactions"
-    id: Optional[int] = Field(default=None, primary_key=True)
-    plan_id: int = Field(foreign_key="investment_plans.id")
-    user_id: int = Field(foreign_key="users.id")
-    amount: float
-    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
-
-    plan: Optional[InvestmentPlan] = Relationship(back_populates="transactions")
-    user: Optional["User"] = Relationship(back_populates="investment_transactions")
 
 # --- Schemas ---
 class DebtCreate(DebtBase):
     pass
+
+class UserProfileUpdate(SQLModel):
+    alias: Optional[str] = None
+    photo_url: Optional[str] = None
+
+class UserPasswordUpdate(SQLModel):
+    current_password: str
+    new_password: str
 
 class DebtUpdate(SQLModel):
     description: Optional[str] = None
@@ -135,65 +112,7 @@ class SpaceResponse(SQLModel):
     owner_id: int
     created_at: datetime
 
-class InvestmentPlanCreate(InvestmentPlanBase):
-    pass
 
-class InvestmentPlanUpdate(SQLModel):
-    name: Optional[str] = None
-    target_amount: Optional[float] = None
-    icon: Optional[str] = None
-    color: Optional[str] = None
-
-class InvestmentPlanResponse(InvestmentPlanBase):
-    id: int
-    owner_id: Optional[int]
-    created_at: datetime
-
-class InvestmentTransactionCreate(SQLModel):
-    amount: float
-
-class InvestmentTransactionResponse(SQLModel):
-    id: int
-    plan_id: int
-    user_id: int
-    amount: float
-    created_at: datetime
-
-# --- Budget Models ---
-class MonthlyBudgetBase(SQLModel):
-    category_id: int = Field(foreign_key="categories.id")
-    month: str  # Format: "YYYY-MM"
-    budget_amount: float
-    spent_amount: float = 0.0
-    alert_threshold: float = 0.8  # 80% por defecto
-
-class MonthlyBudget(MonthlyBudgetBase, table=True):
-    __tablename__ = "monthly_budgets"
-    id: Optional[int] = Field(default=None, primary_key=True)
-    owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
-    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
-    updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
-    
-    category: Optional[Category] = Relationship()
-
-class MonthlyBudgetCreate(SQLModel):
-    category_id: int
-    month: str
-    budget_amount: float
-    alert_threshold: float = 0.8
-
-class MonthlyBudgetUpdate(SQLModel):
-    budget_amount: Optional[float] = None
-    spent_amount: Optional[float] = None
-    alert_threshold: Optional[float] = None
-
-class MonthlyBudgetResponse(MonthlyBudgetBase):
-    id: int
-    owner_id: int
-    category: Optional[CategoryBase] = None
-    percentage_used: float = 0.0
-    is_over_budget: bool = False
-    should_alert: bool = False
 
 class CategorySpendingReport(SQLModel):
     category_id: int

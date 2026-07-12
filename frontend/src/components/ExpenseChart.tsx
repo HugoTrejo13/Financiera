@@ -57,7 +57,7 @@ export default function ExpenseChart({ debts, filterFrom, filterTo }: ExpenseCha
   const chartData = useMemo(() => {
     if (filteredDebts.length === 0) return [];
 
-    // Agrupar gastos por categoría y sumar totales
+    // Agrupar compras por categoría y sumar totales
     const groupedData = filteredDebts.reduce((acc, debt) => {
       const categoryName = debt.category?.name || 'Sin categoría';
       const categoryIcon = debt.category?.icon || '💰';
@@ -94,7 +94,7 @@ export default function ExpenseChart({ debts, filterFrom, filterTo }: ExpenseCha
 
   // Formatear fecha para mostrar
   const formatDateRange = () => {
-    if (!filterFrom && !filterTo) return 'Todos los gastos';
+    if (!filterFrom && !filterTo) return 'Todas las compras';
     
     const formatDate = (dateStr: string) => {
       if (!dateStr) return '';
@@ -142,7 +142,7 @@ export default function ExpenseChart({ debts, filterFrom, filterTo }: ExpenseCha
       <div className="rounded-xl border bg-card text-card-foreground shadow-md p-6">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold text-lg">Análisis de Gastos</h3>
+          <h3 className="font-semibold text-lg">Análisis de Compras</h3>
         </div>
         <div className="text-center py-12 text-muted-foreground">
           No hay datos para mostrar en el período seleccionado.
@@ -158,7 +158,7 @@ export default function ExpenseChart({ debts, filterFrom, filterTo }: ExpenseCha
         <div>
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold text-lg">Análisis de Gastos</h3>
+            <h3 className="font-semibold text-lg">Análisis de Compras</h3>
           </div>
           <p className="text-sm text-muted-foreground">{formatDateRange()}</p>
         </div>

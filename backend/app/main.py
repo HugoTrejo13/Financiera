@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
+import traceback
 from contextlib import asynccontextmanager
 from app.database import settings, init_db
 from app.routers import debts, categories, news, auth, spaces
@@ -40,7 +40,6 @@ app.add_middleware(
 # --- Manejador de Errores Centralizado ---
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    import traceback
     error_detail = str(exc)
     error_traceback = traceback.format_exc()
     

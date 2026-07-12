@@ -7,6 +7,8 @@ import App from './App.tsx'
 import DebtsView from './components/DebtsView'
 import MortgageView from './components/MortgageView'
 import AutoLoanView from './components/AutoLoanView'
+import Dashboard from './pages/Dashboard'
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -16,7 +18,6 @@ const queryClient = new QueryClient({
   },
 })
 
-import Dashboard from './pages/Dashboard'
 const router = createBrowserRouter([
   {
     path: "/",

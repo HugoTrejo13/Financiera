@@ -120,7 +120,6 @@ export default function DebtDetailsModal({ debt, onClose, onUpdated }: DebtDetai
       onUpdated(); // Refresca los datos en la vista principal
       setIsEditing(false); // Sale del modo edición
     } catch (err) {
-      console.error('Error al editar deuda', err);
       alert('Error al guardar los cambios.');
     } finally {
       setLoading(false);
@@ -137,7 +136,6 @@ export default function DebtDetailsModal({ debt, onClose, onUpdated }: DebtDetai
       await api.put(`/api/debts/${debt.id}`, { paid_months: newPaidMonths });
       onUpdated();
     } catch (err) {
-      console.error('Error toggling month status', err);
       setLocalPaidMonths(debt.paid_months || 0);
       alert('Error al actualizar el pago.');
     }

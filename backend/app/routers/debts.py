@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from typing import List
+from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app import models
@@ -11,8 +12,7 @@ router = APIRouter(prefix="/api/debts", tags=["Debts"])
 
 @router.get("/", response_model=List[models.DebtResponse])
 async def get_debts(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    from sqlalchemy.orm import selectinload
-    
+
     result = await db.execute(
         select(models.Debt)
         .options(selectinload(models.Debt.category))
@@ -25,8 +25,7 @@ async def get_debts(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(
 
 @router.post("/", response_model=models.DebtResponse)
 async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    from sqlalchemy.orm import selectinload
-    
+
     if debt.payment_type == "contado":
         total_amount = debt.price
         monthly_payment = 0.0
@@ -63,8 +62,7 @@ async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db
 
 @router.put("/{debt_id}", response_model=models.DebtResponse)
 async def update_debt(debt_id: int, debt_update: models.DebtUpdate, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    from sqlalchemy.orm import selectinload
-    
+
     result = await db.execute(select(models.Debt).where(models.Debt.id == debt_id, models.Debt.owner_id == current_user.id))
     db_debt = result.scalar_one_or_none()
     if not db_debt:

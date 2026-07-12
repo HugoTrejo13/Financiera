@@ -5,6 +5,7 @@ from typing import List
 
 from app.database import get_db
 from app import models
+from app.auth import get_current_user
 
 router = APIRouter(prefix="/api/categories", tags=["Categories"])
 
@@ -14,7 +15,6 @@ async def get_categories(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.Category))
     return result.scalars().all()
 
-from app.auth import get_current_user
 
 @router.get("/reports/category-spending", response_model=List[models.CategorySpendingReport])
 async def get_category_spending_report(

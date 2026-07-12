@@ -377,4 +377,3 @@ export function generateMortgagePDF(data: MortgageData): void {
   doc.save(`simulacion-credito-hipotecario-${data.bankName.replace(/\s+/g, '-')}.pdf`);
 }
 
-// Made with Bob

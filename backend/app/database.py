@@ -29,8 +29,6 @@ engine = create_async_engine(
     connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
 )
 
-# No WAL PRAGMA via event listener because asyncio drivers manage connections differently.
-# But we can still do it via execution options if needed, but it's optional for async local dev.
 
 AsyncSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
 
@@ -43,5 +41,4 @@ async def get_db():
 
 async def init_db():
     async with engine.begin() as conn:
-        # Crea las tablas (Alembic sería lo ideal para prod, pero esto recrea para dev si no existen)
         await conn.run_sync(SQLModel.metadata.create_all)

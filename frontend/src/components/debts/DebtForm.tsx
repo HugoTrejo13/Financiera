@@ -69,8 +69,6 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
 
   const onSubmit = async (values: DebtFormValues) => {
     try {
-      console.log('📝 Valores del formulario:', values);
-      
       const rawPrice = parseFloat(values.priceStr.replace(/,/g, ''));
       if (isNaN(rawPrice) || rawPrice <= 0) {
         alert('Por favor ingresa un precio válido');
@@ -91,12 +89,9 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
         category_id: values.category_id,
       };
 
-      console.log('📤 Enviando datos al backend:', data);
-      
       const success = await onCreate(data);
       
       if (success) {
-        console.log('✅ Compra creada exitosamente');
         addNotification({
           title: 'Nueva compra',
           message: 'Se añadió correctamente tu gasto',
@@ -104,11 +99,9 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
         });
         reset();
       } else {
-        console.error('❌ Error al crear la compra');
         alert('Error al crear la compra. Por favor intenta de nuevo.');
       }
     } catch (error) {
-      console.error('❌ Error en onSubmit:', error);
       alert('Error inesperado. Revisa la consola para más detalles.');
     }
   };

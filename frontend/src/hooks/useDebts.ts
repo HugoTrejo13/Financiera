@@ -57,9 +57,7 @@ export const useDebts = () => {
 
   const createDebt = async (debtData: any) => {
     try {
-      console.log('🔄 useDebts: Enviando petición POST a /api/debts/', debtData);
       const result = await createMutation.mutateAsync(debtData);
-      console.log('✅ useDebts: Respuesta del servidor:', result);
       return true;
     } catch (err: any) {
       console.error("❌ useDebts: Error creating debt:", err);

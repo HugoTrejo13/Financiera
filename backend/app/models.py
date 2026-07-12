@@ -1,8 +1,6 @@
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
-from decimal import Decimal
-
 class CategoryBase(SQLModel):
     name: str = Field(unique=True, nullable=False)
     icon: str = Field(nullable=False)

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Wallet, Trash2 } from 'lucide-react';
 import DebtDetailsModal from './DebtDetailsModal';
-import ExpenseChart from './ExpenseChart';
 import DebtForm from './debts/DebtForm';
 import DebtTable from './debts/DebtTable';
 import { useDebts } from '../hooks/useDebts';
@@ -89,16 +88,6 @@ export default function DebtsView() {
             onCreate={createDebt}
             currentExchangeRate={currentExchangeRate}
           />
-
-          {debts.length > 0 && (
-            <div data-tour="expense-chart">
-              <ExpenseChart
-                debts={debts as any}
-                filterFrom={filterFrom}
-                filterTo={filterTo}
-              />
-            </div>
-          )}
         </div>
 
         <DebtTable

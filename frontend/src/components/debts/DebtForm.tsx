@@ -17,7 +17,7 @@ const debtSchema = z.object({
   payment_type: z.enum(['contado', 'meses', '']),
   priceStr: z.string().min(1, 'El precio es requerido'),
   currency: z.enum(['mxn', 'usd']),
-  category_id: z.number().nullable(),
+  category_id: z.number().min(1, 'Selecciona una categoría'),
   months: z.number().min(1).max(24).nullable().optional(),
   has_interest: z.enum(['si', 'no', '']).nullable().optional(),
   interest_rate: z.number().min(0).nullable().optional(),
@@ -37,7 +37,7 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
       payment_type: '',
       priceStr: '',
       currency: 'mxn',
-      category_id: null,
+      category_id: 0,
       months: null,
       has_interest: '',
       interest_rate: 0,
@@ -49,8 +49,6 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
   const hasInterest = watch('has_interest');
   const currency = watch('currency');
   const isImpulsive = watch('is_impulsive');
-  const selectedCategory = watch('category_id');
-
   const formatWithCommas = (raw: string): string => {
     let val = raw.replace(/[^0-9.]/g, '');
     const parts = val.split('.');
@@ -122,37 +120,34 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
         {/* Categoría */}
         <div>
-          <label className={labelClass}>Categoría (Opcional)</label>
+          <label className={labelClass}>Categoría</label>
           {categories.length === 0 ? (
             <div className="p-4 rounded-lg border border-dashed border-border bg-muted/20 text-center">
               <p className="text-sm text-muted-foreground">
                 No hay categorías disponibles.
-                <br />
-                <span className="text-xs">Ejecuta <code className="bg-muted px-1 py-0.5 rounded">python backend/init_categories.py</code> para crearlas.</span>
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-4 gap-2 mt-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setValue('category_id', cat.id, { shouldValidate: true })}
-                  className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all hover:scale-105 ${
-                    selectedCategory === cat.id
-                      ? 'border-2 shadow-md'
-                      : 'border-input hover:bg-muted'
-                  }`}
-                  style={{
-                    borderColor: selectedCategory === cat.id ? cat.color : undefined,
-                    backgroundColor: selectedCategory === cat.id ? `${cat.color}15` : undefined,
-                  }}
-                  title={cat.name}
-                >
-                  <span className="text-2xl mb-1">{cat.icon}</span>
-                  <span className="text-[10px] font-medium text-center leading-tight">{cat.name.split(' ')[0]}</span>
-                </button>
-              ))}
+            <div className="mt-2 relative">
+              <select
+                className={`${inputClass} appearance-none cursor-pointer`}
+                {...register('category_id', { valueAsNumber: true })}
+              >
+                <option value={NaN}>-- Selecciona una categoría --</option>
+                {[
+                  categories.find(c => c.name === 'Comida'),
+                  categories.find(c => c.name === 'Gastos hormiga'),
+                  ...categories.filter(c => c.name !== 'Comida' && c.name !== 'Gastos hormiga')
+                ].filter(Boolean).map((cat: any) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.icon} {cat.name}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+              {errors.category_id && <p className={errorClass}>{errors.category_id.message}</p>}
             </div>
           )}
         </div>

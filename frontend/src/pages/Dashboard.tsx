@@ -100,7 +100,7 @@ export default function Dashboard() {
   const activeDebtsTotal = debts.reduce((acc, debt) => acc + debt.remaining_amount, 0);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Sección de Perfil de Usuario Principal */}
       <div className="bg-card/50 backdrop-blur-xl border border-border/50 p-8 rounded-3xl shadow-sm flex flex-col md:flex-row items-center gap-8 transition-all hover:shadow-md mb-8">
         

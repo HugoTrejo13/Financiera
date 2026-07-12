@@ -143,7 +143,7 @@ function App() {
     return (
       <div className="min-h-screen bg-background flex flex-col overflow-hidden">
         {renderInternalHeader()}
-        <div className="flex-1 flex overflow-hidden max-w-[1400px] mx-auto w-full">
+        <div className="flex-1 flex overflow-hidden w-full">
           {/* Main Content */}
           <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-background/50">
             <Outlet />

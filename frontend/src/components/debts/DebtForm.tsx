@@ -4,6 +4,7 @@ import type { Category } from '../../hooks/useCategories';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useAppStore } from '../../store/useAppStore';
 
 interface DebtFormProps {
   categories: Category[];
@@ -28,6 +29,7 @@ type DebtFormValues = z.infer<typeof debtSchema>;
 
 export default function DebtForm({ categories, onCreate, currentExchangeRate }: DebtFormProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const addNotification = useAppStore(state => state.addNotification);
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<DebtFormValues>({
     resolver: zodResolver(debtSchema),
@@ -95,6 +97,11 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
       
       if (success) {
         console.log('✅ Compra creada exitosamente');
+        addNotification({
+          title: 'Nueva compra',
+          message: 'Se añadió correctamente tu gasto',
+          path: '/gastos'
+        });
         reset();
       } else {
         console.error('❌ Error al crear la compra');

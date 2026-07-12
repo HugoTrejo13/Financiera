@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import NewsSection from './components/NewsSection';
 import Footer from './components/Footer';
-import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft } from 'lucide-react';
+import { Wallet, TrendingUp, ShieldCheck, MapPin, Moon, Sun, ChevronLeft, Bell } from 'lucide-react';
 import { useAppStore } from './store/useAppStore';
 import { useAuthStore } from './store/useAuthStore';
 import LoginModal from './components/auth/LoginModal';
@@ -12,8 +12,12 @@ function App() {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const { isDarkMode, setIsDarkMode } = useAppStore();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const { isDarkMode, setIsDarkMode, notifications, markAsRead, markAllAsRead } = useAppStore();
   const { isAuthenticated, logout } = useAuthStore();
+  
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -50,50 +54,97 @@ function App() {
             </button>
           </div>
           
-          <div className="hidden md:flex items-center gap-6 mr-4">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="flex items-center gap-2 text-foreground font-semibold hover:text-primary transition-colors"
-              data-tour="tools-menu"
-            >
-              Herramientas
-              <svg className={`fill-current h-4 w-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-              </svg>
-            </button>
-            <button 
-              onClick={() => { navigate('/dashboard'); setIsMenuOpen(false); }}
-              className={`font-bold text-sm transition-colors ${location.pathname === '/dashboard' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              Perfil
-            </button>
-            <button 
-              onClick={() => { navigate('/gastos'); setIsMenuOpen(false); }}
-              className={`font-bold text-sm transition-colors ${location.pathname === '/gastos' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              Gestión de Compras
-            </button>
-          </div>
-
           <div className="flex items-center gap-4">
-          
-          {isAuthenticated && (
-            <button
-              onClick={() => {
-                logout();
-                navigate('/');
-              }}
-              className="text-sm font-medium text-muted-foreground hover:text-destructive transition-colors"
-            >
-              Cerrar sesión
-            </button>
-          )}
+            <div className="hidden md:flex items-center gap-6 mr-4">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="flex items-center gap-2 text-foreground font-semibold hover:text-primary transition-colors"
+                data-tour="tools-menu"
+              >
+                Herramientas
+                <svg className={`fill-current h-4 w-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                </svg>
+              </button>
+              <button 
+                onClick={() => { navigate('/dashboard'); setIsMenuOpen(false); }}
+                className={`font-bold text-sm transition-colors ${location.pathname === '/dashboard' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Perfil
+              </button>
+              <button 
+                onClick={() => { navigate('/gastos'); setIsMenuOpen(false); }}
+                className={`font-bold text-sm transition-colors ${location.pathname === '/gastos' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Gestión de Compras
+              </button>
+            </div>
 
-          <div className="flex items-center gap-2 font-bold text-lg tracking-tight opacity-50 border-l border-border pl-4">
-            <Wallet className="w-5 h-5 text-primary" />
-            Financiera
+            <div className="relative">
+              <button 
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className="text-muted-foreground hover:text-foreground transition-colors relative" 
+                title="Notificaciones"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-card"></span>
+                )}
+              </button>
+
+              {isNotificationsOpen && (
+                <div className="absolute right-0 mt-4 w-80 bg-card border border-border shadow-xl rounded-xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200">
+                  <div className="p-3 border-b border-border flex justify-between items-center bg-muted/30">
+                    <h3 className="font-semibold text-sm">Notificaciones</h3>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllAsRead} className="text-xs text-primary hover:underline">
+                        Marcar todas leídas
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-80 overflow-y-auto custom-scrollbar">
+                    {notifications.length === 0 ? (
+                      <div className="p-6 text-center text-sm text-muted-foreground">
+                        No tienes notificaciones
+                      </div>
+                    ) : (
+                      notifications.map(notif => (
+                        <div 
+                          key={notif.id} 
+                          className={`p-4 border-b border-border last:border-0 hover:bg-muted/50 cursor-pointer transition-colors ${!notif.read ? 'bg-primary/5' : ''}`}
+                          onClick={() => {
+                            markAsRead(notif.id);
+                            setIsNotificationsOpen(false);
+                            if (notif.path) navigate(notif.path);
+                          }}
+                        >
+                          <div className="flex justify-between items-start mb-1">
+                            <h4 className={`text-sm ${!notif.read ? 'font-bold text-primary' : 'font-medium'}`}>{notif.title}</h4>
+                            {!notif.read && <span className="w-2 h-2 bg-primary rounded-full mt-1.5 flex-shrink-0" />}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{notif.message}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {isAuthenticated && (
+              <button
+                onClick={() => setIsLogoutModalOpen(true)}
+                className="text-sm font-medium text-muted-foreground hover:text-destructive transition-colors ml-2"
+              >
+                Cerrar sesión
+              </button>
+            )}
+
+            <div className="flex items-center gap-2 font-bold text-lg tracking-tight opacity-50 border-l border-border pl-4">
+              <Wallet className="w-5 h-5 text-primary" />
+              Financiera
+            </div>
           </div>
-        </div>
       </div>
         
 
@@ -139,17 +190,56 @@ function App() {
     </>
   );
 
+  const renderModals = () => (
+    <>
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 9999 }}>
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsLogoutModalOpen(false)}></div>
+          <div className="relative bg-card border border-border shadow-2xl rounded-2xl w-full max-w-sm p-6 animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-bold mb-2">¿Seguro que quieres salir?</h3>
+            <p className="text-muted-foreground text-sm mb-6">Tendrás que volver a iniciar sesión para acceder a tu información.</p>
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={() => setIsLogoutModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold hover:bg-muted transition-colors"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={() => {
+                  logout();
+                  setIsLogoutModalOpen(false);
+                  navigate('/');
+                }}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
   if (!isLobby) {
     return (
-      <div className="min-h-screen bg-background flex flex-col overflow-hidden">
-        {renderInternalHeader()}
-        <div className="flex-1 flex overflow-hidden w-full">
-          {/* Main Content */}
-          <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-background/50">
-            <Outlet />
-          </main>
+      <>
+        <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+          {renderInternalHeader()}
+          <div className="flex-1 flex overflow-hidden w-full">
+            {/* Main Content */}
+            <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-background/50">
+              <Outlet />
+            </main>
+          </div>
         </div>
-      </div>
+        {renderModals()}
+      </>
     );
   }
 
@@ -279,11 +369,8 @@ function App() {
       {/* ── Footer Profesional ────────────────────────────────────────────────── */}
       <Footer />
       
-      {/* ── Modal de Autenticación ────────────────────────────────────────────── */}
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
-      />
+      {/* ── Modales ────────────────────────────────────────────── */}
+      {renderModals()}
     </div>
   );
 }

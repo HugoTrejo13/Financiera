@@ -290,53 +290,57 @@ function App() {
       </nav>
 
       {/* ── Banner Principal (Hero) ───────────────────────────────────────────── */}
-      <section className="w-full flex-1 flex flex-col md:flex-row items-center justify-between px-6 py-16 md:py-24 max-w-7xl mx-auto gap-12">
+      <section className="w-full flex-1 flex flex-col md:flex-row items-center justify-between px-6 py-16 md:py-24 max-w-7xl mx-auto gap-12 md:gap-16">
         {/* Texto del Banner */}
-        <div className="flex-1 text-left space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-bold tracking-wide uppercase border border-primary/20">
-            <ShieldCheck className="w-4 h-4" />
+        <div className="flex-1 text-left space-y-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 text-muted-foreground text-xs font-bold tracking-widest uppercase border border-border/50">
+            <ShieldCheck className="w-4 h-4 text-primary" />
             Software Financiero Seguro
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1]">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter text-foreground leading-[1.05]">
             EL CONTROL TOTAL <br/>
-            <span className="text-primary">DE TU DINERO.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70">DE TU DINERO.</span>
           </h1>
           
-          <p className="text-lg text-muted-foreground max-w-xl leading-relaxed font-medium">
-            Es la plataforma de bienestar financiero que te permite registrar tus compras, simular créditos y establecer presupuestos para alcanzar tu libertad económica.
+          <p className="text-lg text-muted-foreground max-w-lg leading-relaxed font-medium">
+            La plataforma minimalista que te permite registrar tus compras diarias y simular créditos a meses sin intereses para lograr tu libertad económica.
           </p>
           
-          <div className="pt-4 flex items-center gap-4">
+          <div className="pt-2 flex flex-col sm:flex-row items-center gap-4">
             <button
               onClick={handleStart}
-              className="inline-flex items-center justify-center rounded-full text-lg font-bold transition-all bg-foreground text-background hover:scale-105 h-14 px-8 shadow-xl"
+              className="w-full sm:w-auto inline-flex items-center justify-center rounded-2xl text-base font-bold transition-all bg-foreground text-background hover:scale-105 h-14 px-8 shadow-xl"
             >
               Comenzar a ahorrar
             </button>
-            <a href="#noticias" className="inline-flex items-center justify-center rounded-full text-lg font-bold transition-all border-2 border-border hover:bg-muted text-foreground h-14 px-8">
+            <a href="#noticias" className="w-full sm:w-auto inline-flex items-center justify-center rounded-2xl text-base font-bold transition-all border-2 border-border bg-background hover:bg-muted text-foreground h-14 px-8">
               Conoce más
             </a>
           </div>
         </div>
 
-        {/* Imagen / Ilustración del Banner */}
-        <div className="flex-1 relative w-full max-w-lg aspect-square">
-          <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute inset-4 bg-card border-2 border-border rounded-3xl shadow-2xl p-6 flex flex-col items-center justify-center text-center rotate-3 hover:rotate-0 transition-transform duration-500">
-            <div className="w-20 h-20 bg-primary/20 rounded-2xl flex items-center justify-center mb-6">
-              <TrendingUp className="w-10 h-10 text-primary" />
+        {/* Ilustración del Banner - Limpia y sin amontonar */}
+        <div className="flex-1 w-full max-w-md mx-auto md:max-w-none relative">
+          <div className="absolute inset-0 bg-primary/10 rounded-[3rem] blur-3xl opacity-50" />
+          
+          <div className="relative flex flex-col gap-6">
+            <div className="bg-card/80 backdrop-blur-xl border border-border/40 rounded-[2rem] shadow-2xl p-8 transition-transform hover:-translate-y-2 duration-500">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
+                <TrendingUp className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-3xl font-bold mb-3 tracking-tight">Simulador Financiero</h3>
+              <p className="text-muted-foreground leading-relaxed">Proyecta tus compras a meses sin intereses y decide inteligentemente.</p>
             </div>
-            <h3 className="text-2xl font-bold mb-2">Simulador Financiero</h3>
-            <p className="text-muted-foreground font-medium">Proyecta tus compras a meses sin intereses y decide inteligentemente.</p>
-          </div>
-          <div className="absolute -bottom-8 -left-8 bg-card border-2 border-border rounded-3xl shadow-xl p-6 flex items-center gap-4 -rotate-6 hover:rotate-0 transition-transform duration-500 delay-100">
-            <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-green-500" />
-            </div>
-            <div className="text-left">
-              <p className="text-xs font-bold text-muted-foreground uppercase">Ahorro Mensual</p>
-              <p className="text-xl font-black">+$4,500.00</p>
+
+            <div className="bg-card/80 backdrop-blur-xl border border-border/40 rounded-3xl shadow-xl p-6 flex items-center gap-5 transition-transform hover:-translate-y-1 duration-500 delay-100">
+              <div className="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center shrink-0">
+                <Wallet className="w-7 h-7 text-green-500" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Ahorro Mensual Promedio</p>
+                <p className="text-2xl font-black tracking-tight text-foreground">+$4,500.00</p>
+              </div>
             </div>
           </div>
         </div>

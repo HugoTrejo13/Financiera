@@ -265,8 +265,6 @@ function App() {
           <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-muted-foreground">
             <a href="#" className="text-foreground hover:text-primary transition-colors border-b-2 border-primary py-5">Inicio</a>
             <a href="#noticias" className="hover:text-primary transition-colors py-5 border-b-2 border-transparent hover:border-primary/50">Noticias</a>
-            <a href="#recursos" className="hover:text-primary transition-colors py-5 border-b-2 border-transparent hover:border-primary/50">Recursos</a>
-            <a href="#legal" className="hover:text-primary transition-colors py-5 border-b-2 border-transparent hover:border-primary/50">Ayuda</a>
           </div>
 
           {/* Botones de Acción */}

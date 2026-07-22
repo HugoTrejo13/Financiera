@@ -86,7 +86,10 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
     try {
       const rawPrice = parseFloat(values.priceStr.replace(/,/g, ''));
       if (isNaN(rawPrice) || rawPrice <= 0) {
-        alert('Por favor ingresa un precio válido');
+        addNotification({
+          title: 'Error de validación',
+          message: 'Por favor ingresa un precio válido.'
+        });
         return;
       }
       
@@ -115,10 +118,16 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
         reset();
         setIsCategoryModalOpen(false);
       } else {
-        alert('Error al crear la compra. Por favor intenta de nuevo.');
+        addNotification({
+          title: 'Error al registrar',
+          message: 'No se pudo crear la compra. Por favor intenta de nuevo.'
+        });
       }
     } catch (error) {
-      alert('Error inesperado. Revisa la consola para más detalles.');
+      addNotification({
+        title: 'Error inesperado',
+        message: 'Ha ocurrido un problema procesando la compra.'
+      });
     }
   };
 

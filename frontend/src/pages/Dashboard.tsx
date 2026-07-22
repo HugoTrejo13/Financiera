@@ -46,14 +46,38 @@ export default function Dashboard() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result as string;
-        try {
-          const res = await api.put('/auth/me/profile', { photo_url: base64 });
-          setProfile(prev => ({ ...prev, photo_url: res.data.photo_url }));
-        } catch (err) {
-          console.error("Error updating photo", err);
-        }
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 300;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+            api.put('/auth/me/profile', { photo_url: compressedBase64 })
+              .then(res => setProfile(prev => ({ ...prev, photo_url: res.data.photo_url })))
+              .catch(err => console.error("Error updating photo", err));
+          }
+        };
+        img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     }

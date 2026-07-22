@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { CalendarDays, Plus } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { CalendarDays, Plus, Check } from 'lucide-react';
 import type { Category } from '../../hooks/useCategories';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,7 +18,7 @@ const debtSchema = z.object({
   payment_type: z.enum(['contado', 'meses', '']),
   priceStr: z.string().min(1, 'El precio es requerido'),
   currency: z.enum(['mxn', 'usd']),
-  category_id: z.number().min(1, 'Selecciona una categoría'),
+  category_id: z.number().min(1, 'La categoría es obligatoria'),
   months: z.number().min(1).max(24).nullable().optional(),
   has_interest: z.enum(['si', 'no', '']).nullable().optional(),
   interest_rate: z.number().min(0).nullable().optional(),
@@ -30,6 +30,7 @@ type DebtFormValues = z.infer<typeof debtSchema>;
 export default function DebtForm({ categories, onCreate, currentExchangeRate }: DebtFormProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
   const addNotification = useAppStore(state => state.addNotification);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<DebtFormValues>({
     resolver: zodResolver(debtSchema),
@@ -51,6 +52,20 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
   const hasInterest = watch('has_interest');
   const currency = watch('currency');
   const isImpulsive = watch('is_impulsive');
+  const selectedCategoryId = watch('category_id');
+
+  // Comida y Gastos hormiga siempre al frente
+  const sortedCategories = [
+    categories.find(c => c.name === 'Comida'),
+    categories.find(c => c.name === 'Gastos hormiga'),
+    categories.find(c => c.name === 'Transporte'),
+    categories.find(c => c.name === 'Otro'),
+    ...categories.filter(c => !['Comida', 'Gastos hormiga', 'Transporte', 'Otro'].includes(c.name))
+  ].filter(Boolean) as Category[];
+
+  const quickCategories = sortedCategories.slice(0, 4);
+  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+
   const formatWithCommas = (raw: string): string => {
     let val = raw.replace(/[^0-9.]/g, '');
     const parts = val.split('.');
@@ -98,6 +113,7 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
           path: '/gastos'
         });
         reset();
+        setIsCategoryModalOpen(false);
       } else {
         alert('Error al crear la compra. Por favor intenta de nuevo.');
       }
@@ -118,9 +134,19 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
-        {/* Categoría */}
+        {/* Categoría Obligatoria (Diseño Híbrido: Chips + Popover Grid) */}
         <div>
-          <label className={labelClass}>Categoría</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium leading-none text-foreground">
+              Categoría <span className="text-destructive">*</span>
+            </label>
+            {selectedCategory && (
+              <span className="text-xs font-semibold text-primary flex items-center gap-1 bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 animate-in fade-in duration-200">
+                {selectedCategory.icon} {selectedCategory.name}
+              </span>
+            )}
+          </div>
+
           {categories.length === 0 ? (
             <div className="p-4 rounded-lg border border-dashed border-border bg-muted/20 text-center">
               <p className="text-sm text-muted-foreground">
@@ -128,26 +154,89 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
               </p>
             </div>
           ) : (
-            <div className="mt-2 relative">
-              <select
-                className={`${inputClass} appearance-none cursor-pointer`}
-                {...register('category_id', { valueAsNumber: true })}
-              >
-                <option value={NaN}>-- Selecciona una categoría --</option>
-                {[
-                  categories.find(c => c.name === 'Comida'),
-                  categories.find(c => c.name === 'Gastos hormiga'),
-                  ...categories.filter(c => c.name !== 'Comida' && c.name !== 'Gastos hormiga')
-                ].filter(Boolean).map((cat: any) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.icon} {cat.name}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            <div className="space-y-2">
+              {/* Chips Rápidos + Botón Popover */}
+              <div className="flex flex-wrap items-center gap-2">
+                {quickCategories.map((cat) => {
+                  const isSelected = selectedCategoryId === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setValue('category_id', cat.id, { shouldValidate: true })}
+                      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-primary text-primary-foreground border-primary shadow-md scale-105'
+                          : 'bg-background hover:bg-muted text-muted-foreground border-input hover:text-foreground'
+                      }`}
+                    >
+                      <span>{cat.icon}</span>
+                      <span>{cat.name}</span>
+                      {isSelected && <Check className="w-3 h-3 ml-0.5" />}
+                    </button>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryModalOpen(!isCategoryModalOpen)}
+                  className={`inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold border border-dashed transition-all cursor-pointer ${
+                    isCategoryModalOpen || (selectedCategory && !quickCategories.some(c => c.id === selectedCategoryId))
+                      ? 'border-primary text-primary bg-primary/10'
+                      : 'border-border bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>
+                    {selectedCategory && !quickCategories.some(c => c.id === selectedCategoryId)
+                      ? selectedCategory.name
+                      : 'Más categorías'}
+                  </span>
+                </button>
               </div>
-              {errors.category_id && <p className={errorClass}>{errors.category_id.message}</p>}
+
+              {errors.category_id && (
+                <p className={errorClass}>{errors.category_id.message}</p>
+              )}
+
+              {/* Popover Grid 3x4 con todas las categorías */}
+              {isCategoryModalOpen && (
+                <div className="p-3 border border-border/80 rounded-2xl bg-card shadow-xl mt-2 animate-in fade-in zoom-in-95 duration-150 border-primary/20">
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/50 text-xs font-bold text-muted-foreground">
+                    <span>Selecciona una Categoría</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsCategoryModalOpen(false)}
+                      className="p-1 hover:bg-muted rounded-md transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-52 overflow-y-auto p-1">
+                    {sortedCategories.map((cat) => {
+                      const isSelected = selectedCategoryId === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => {
+                            setValue('category_id', cat.id, { shouldValidate: true });
+                            setIsCategoryModalOpen(false);
+                          }}
+                          className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs text-left font-medium transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-primary text-primary-foreground border-primary font-bold shadow-sm'
+                              : 'bg-background hover:bg-muted border-border text-foreground hover:border-primary/50'
+                          }`}
+                        >
+                          <span className="text-base">{cat.icon}</span>
+                          <span className="truncate">{cat.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

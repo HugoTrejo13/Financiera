@@ -101,6 +101,7 @@ export default function ExpenseDonutChart({ data }: Props) {
         </h4>
         <div className="max-h-[350px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
           {chartData.map((item, i) => {
+            const itemPercentage = totalAmount > 0 ? ((item.value / totalAmount) * 100).toFixed(1) : '0.0';
             return (
               <div key={i} className="flex items-center justify-between group">
                 <div className="flex items-center gap-3">
@@ -113,7 +114,10 @@ export default function ExpenseDonutChart({ data }: Props) {
                     {item.name}
                   </span>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex items-center gap-2">
+                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                    {itemPercentage}%
+                  </span>
                   <p className="font-bold text-sm">
                     ${item.value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>

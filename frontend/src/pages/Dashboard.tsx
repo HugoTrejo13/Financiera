@@ -96,8 +96,13 @@ export default function Dashboard() {
     );
   }
 
-  const totalSpent = report.reduce((acc, item) => acc + item.total_spent, 0);
-  const activeDebtsTotal = debts.reduce((acc, debt) => acc + debt.remaining_amount, 0);
+  const safeReport = Array.isArray(report) ? report : [];
+  const safeDebts = Array.isArray(debts) ? debts : [];
+
+  const totalSpent = safeReport.reduce((acc, item) => acc + (item?.total_spent || 0), 0);
+  const activeDebtsTotal = safeDebts.reduce((acc, debt) => acc + (debt?.remaining_amount || 0), 0);
+  const totalPurchasesCount = safeDebts.length;
+  const averageSpentPerPurchase = totalPurchasesCount > 0 ? totalSpent / totalPurchasesCount : 0;
 
   return (
     <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -173,8 +178,8 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* Tarjetas KPI */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Tarjetas KPI Consolidadas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         <div className="bg-card/50 backdrop-blur-xl border border-border/50 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-500/10 rounded-xl">
@@ -182,9 +187,18 @@ export default function Dashboard() {
             </div>
             <h3 className="text-sm font-medium text-muted-foreground">Compras este mes</h3>
           </div>
-          <p className="text-3xl font-bold">${totalSpent.toFixed(2)}</p>
+          <p className="text-3xl font-bold">${totalSpent.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
 
+        <div className="bg-card/50 backdrop-blur-xl border border-border/50 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-emerald-500/10 rounded-xl">
+              <TrendingDown className="w-5 h-5 text-emerald-500 transform rotate-180" />
+            </div>
+            <h3 className="text-sm font-medium text-muted-foreground">Gasto Promedio / Compra</h3>
+          </div>
+          <p className="text-3xl font-bold">${averageSpentPerPurchase.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        </div>
 
         <div className="bg-card/50 backdrop-blur-xl border border-border/50 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md">
           <div className="flex items-center gap-3 mb-2">
@@ -193,7 +207,7 @@ export default function Dashboard() {
             </div>
             <h3 className="text-sm font-medium text-muted-foreground">Deuda Activa (Abonos)</h3>
           </div>
-          <p className="text-3xl font-bold">${activeDebtsTotal.toFixed(2)}</p>
+          <p className="text-3xl font-bold">${activeDebtsTotal.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
       </div>
 

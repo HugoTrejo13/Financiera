@@ -57,7 +57,7 @@ export const useDebts = () => {
 
   const createDebt = async (debtData: any) => {
     try {
-      const result = await createMutation.mutateAsync(debtData);
+      await createMutation.mutateAsync(debtData);
       return true;
     } catch (err: any) {
       console.error("❌ useDebts: Error creating debt:", err);

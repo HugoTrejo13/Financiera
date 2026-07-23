@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 import traceback
 from contextlib import asynccontextmanager
 from app.database import settings, init_db
-from app.routers import debts, categories, news, auth, spaces
+from app.routers import debts, categories, news, auth, spaces, ai
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded

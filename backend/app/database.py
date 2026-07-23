@@ -39,6 +39,26 @@ async def get_db():
         finally:
             await db.close()
 
+from sqlalchemy import inspect, text
+
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+        
+        # Auto-migración dinámica: inspecciona y agrega cualquier columna nueva de los modelos
+        def auto_sync_schema(sync_conn):
+            inspector = inspect(sync_conn)
+            for table_name, table in SQLModel.metadata.tables.items():
+                if inspector.has_table(table_name):
+                    existing_cols = {col['name'] for col in inspector.get_columns(table_name)}
+                    for column in table.columns:
+                        if column.name not in existing_cols:
+                            col_type = column.type.compile(sync_conn.dialect)
+                            sql = f'ALTER TABLE "{table_name}" ADD COLUMN "{column.name}" {col_type};'
+                            print(f"🛠️ Migración automática: añadiendo columna '{column.name}' a la tabla '{table_name}'")
+                            sync_conn.execute(text(sql))
+
+        try:
+            await conn.run_sync(auto_sync_schema)
+        except Exception as e:
+            print(f"⚠️ Nota de migración de esquema: {e}")

@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Wallet, Trash2 } from 'lucide-react';
+import { Wallet, Trash2, BarChart2 } from 'lucide-react';
 import DebtDetailsModal from './DebtDetailsModal';
 import DebtForm from './debts/DebtForm';
 import DebtTable from './debts/DebtTable';
 import { useDebts } from '../hooks/useDebts';
 import type { Debt } from '../hooks/useDebts';
 import { useCategories } from '../hooks/useCategories';
+import MonthSelector from './common/MonthSelector';
+import MonthlyRecapModal from './modals/MonthlyRecapModal';
 
 export default function DebtsView() {
-  const { debts, loading, fetchDebts, createDebt, deleteDebt } = useDebts();
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    new Date().toISOString().slice(0, 7)
+  );
+  const [isRecapOpen, setIsRecapOpen] = useState(false);
+  const { debts, loading, fetchDebts, createDebt, deleteDebt } = useDebts(selectedMonth);
   const { categories } = useCategories();
   const [currentExchangeRate, setCurrentExchangeRate] = useState<number | null>(null);
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
@@ -18,6 +24,39 @@ export default function DebtsView() {
   const [filterMode, setFilterMode] = useState<'none' | 'range'>('none');
   const [filterFrom, setFilterFrom] = useState<string>('');
   const [filterTo, setFilterTo] = useState<string>('');
+
+  const checkRecapAvailability = (monthStr: string) => {
+    const today = new Date();
+    const currentMonthStr = today.toISOString().slice(0, 7);
+
+    // Si es un mes pasado, la recapitulación SIEMPRE está disponible
+    if (monthStr < currentMonthStr) {
+      return { available: true };
+    }
+
+    // Si es el mes actual, se habilita únicamente en los últimos 5 días del mes
+    if (monthStr === currentMonthStr) {
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+      const currentDay = today.getDate();
+      const daysRemaining = lastDayOfMonth - currentDay;
+
+      if (daysRemaining < 5) {
+        return { available: true };
+      } else {
+        const startDay = lastDayOfMonth - 4;
+        return {
+          available: false,
+          reason: `La recapitulación de este mes estará disponible en los últimos 5 días (a partir del día ${startDay}).`
+        };
+      }
+    }
+
+    return { available: false, reason: "Mes no iniciado." };
+  };
+
+  const recapStatus = checkRecapAvailability(selectedMonth);
 
   const fetchExchangeRate = async () => {
     try {
@@ -73,12 +112,40 @@ export default function DebtsView() {
         </div>
       )}
 
-      <header className="mb-8 pr-16">
-        <h1 className="text-3xl font-bold flex items-center gap-3 tracking-tight">
-          <Wallet className="text-primary w-8 h-8" />
-          GESTIÓN DE COMPRAS
-        </h1>
-        <p className="text-muted-foreground mt-2">Administra tus pasivos/activos y simula tus planes de pago de manera eficiente.</p>
+      <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-3 tracking-tight">
+            <Wallet className="text-primary w-8 h-8" />
+            GESTIÓN DE COMPRAS
+          </h1>
+          <p className="text-muted-foreground mt-2">Administra tus pasivos/activos y simula tus planes de pago de manera eficiente.</p>
+        </div>
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <MonthSelector selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+          <button
+            type="button"
+            disabled={!recapStatus.available}
+            onClick={() => {
+              if (recapStatus.available) {
+                setIsRecapOpen(true);
+              }
+            }}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold border transition-all shadow-sm ${
+              recapStatus.available
+                ? 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 cursor-pointer'
+                : 'bg-muted/40 text-muted-foreground/60 border-border/40 cursor-not-allowed opacity-60'
+            }`}
+            title={
+              recapStatus.available
+                ? 'Ver recapitulación del mes'
+                : recapStatus.reason || 'La recapitulación de este mes estará disponible en los últimos 5 días.'
+            }
+          >
+            <BarChart2 className="w-4 h-4 text-primary" />
+            <span>Recapitulación del Mes</span>
+          </button>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -87,6 +154,8 @@ export default function DebtsView() {
             categories={categories}
             onCreate={createDebt}
             currentExchangeRate={currentExchangeRate}
+            selectedMonth={selectedMonth}
+            debts={debts}
           />
         </div>
 
@@ -101,6 +170,7 @@ export default function DebtsView() {
           setFilterFrom={setFilterFrom}
           filterTo={filterTo}
           setFilterTo={setFilterTo}
+          selectedMonth={selectedMonth}
         />
       </div>
 
@@ -112,6 +182,13 @@ export default function DebtsView() {
             await fetchDebts();
             setSelectedDebt(null);
           }}
+        />
+      )}
+
+      {isRecapOpen && (
+        <MonthlyRecapModal 
+          month={selectedMonth} 
+          onClose={() => setIsRecapOpen(false)} 
         />
       )}
     </div>

@@ -61,6 +61,7 @@ app.include_router(debts.router)
 app.include_router(news.router)
 app.include_router(auth.router)
 app.include_router(spaces.router)
+app.include_router(ai.router)
 
 @app.get("/")
 def read_root():

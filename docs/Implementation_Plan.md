@@ -7,33 +7,25 @@ Este documento es la brújula técnica. Define en qué orden se deben construir 
 1. **Infraestructura Base:** Migración total a PostgreSQL.
 2. **Backend API Core:** FastAPI + SQLModel (Asíncrono).
 3. **Módulo de Seguridad:** Autenticación JWT y encriptación nativa bcrypt.
-4. **UI Core:** Creación de modales elegantes.
-5. **Integración Auth:** El frontend se comunica de manera privada protegiendo rutas.
-6. **Arquitectura Documental:** Establecimiento de la base para escalar a SaaS.
+4. **UI Core:** Modales elegantes, componentes reutilizables y estilo minimalista Apple.
+5. **Integración Auth:** Rutas protegidas en el frontend.
+6. **Arquitectura Documental:** Documentación maestra en `/docs`.
+7. **Clean Code & Simplificación de Alcance:** Eliminación total de Presupuestos y Metas de Inversión; enfoque 100% en Gestión de Compras/Pasivos.
+8. **UX & Analytics Consolidados:** Desglose porcentual visible por categoría, métricas consolidadas en perfil (Gasto Total, Gasto Promedio/Compra, Deuda Activa) y selector de categoría híbrido (Chips + Grid Popover).
+9. **Performance de Perfil:** Compresión de imágenes de perfil con Canvas HTML5 (reducción >99%).
 
 ## Fases Actuales / Futuras 🚧
 
-### Fase 7: Estabilización Backend
+### Fase 10: Contenedorización e Infraestructura (Docker) ✅
+- Creación de `Dockerfile` para Backend FastAPI.
+- Creación de `docker-compose.yml` para orquestar PostgreSQL y API Backend.
 
-- Creación de `Dockerfile` y `docker-compose.yml` para evitar caídas en el entorno local.
+### Fase 11: IA y Reconocimiento Visual (Próxima)
+- Apertura de cámara / subida de recibos y autocompletado de compras mediante Gemini Vision API (OCR inteligente).
+- Predicción de compras e impulsos financieros.
 
-### Fase 8: Dashboard, UI Clean y Analíticas
+### Fase 12: Funcionalidades de Escritorio Avanzadas (Enfoque Desktop-Only)
+- Exportación de reportes financieros a PDF/Excel.
+- Simulador avanzado de amortización de créditos (Hipotecario / Automotriz) con tabla de pagos y aportaciones a capital.
+- Gráficos interactivos de proyección financiera de escritorio.
 
-- Aplicar diseño minimalista tipo Apple (blanco, redondeado, claro).
-- Implementar gráficos (Recharts) en el frontend:
-  - Gastos por categoría.
-  - Progreso del presupuesto vs Gasto real.
-
-### Fase 9: Metas de Inversión (Individual y Compartidas) ✅
-- Construir modelo y rutas para Metas de ahorro. (Completado)
-- Modo colaborativo: Lógica para compartir "Espacios" (Roomies, familia, pareja). (Completado)
-
-### Fase 10: IA y Reconocimiento Visual
-
-- Añadir sección para abrir cámara, tomar foto a recibos/productos, y autocompletar gastos usando IA de Visión.
-- Gráficas predictivas (estimar gastos a futuro).
-
-### Fase 11: Notificaciones y Móvil
-
-- Alertas Push para excedentes de presupuesto.
-- Empaquetar y construir clientes para iOS (App Store) y Android.

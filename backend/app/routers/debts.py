@@ -8,20 +8,77 @@ from app.database import get_db
 from app import models
 from app.auth import get_current_user
 
+from typing import List, Optional
+
 router = APIRouter(prefix="/api/debts", tags=["Debts"])
 
 @router.get("/", response_model=List[models.DebtResponse])
-async def get_debts(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+async def get_debts(
+    skip: int = 0,
+    limit: int = 100,
+    month: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    query = (
+        select(models.Debt)
+        .options(selectinload(models.Debt.category))
+        .where(models.Debt.owner_id == current_user.id)
+    )
+    if month:
+        query = query.where(models.Debt.purchase_date.startswith(month))
 
+    result = await db.execute(query.offset(skip).limit(limit))
+    debts = result.scalars().all()
+    return debts
+
+@router.get("/monthly-recap")
+async def get_monthly_recap(
+    month: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     result = await db.execute(
         select(models.Debt)
         .options(selectinload(models.Debt.category))
         .where(models.Debt.owner_id == current_user.id)
-        .offset(skip)
-        .limit(limit)
+        .where(models.Debt.purchase_date.startswith(month))
     )
     debts = result.scalars().all()
-    return debts
+
+    total_spent = sum(d.price for d in debts)
+    total_count = len(debts)
+    impulsive_count = sum(1 for d in debts if d.is_impulsive)
+
+    highest_purchase = max(debts, key=lambda d: d.price) if debts else None
+
+    category_totals = {}
+    for d in debts:
+        cat_name = d.category.name if d.category else "Sin categoría"
+        cat_icon = d.category.icon if d.category else "📌"
+        if cat_name not in category_totals:
+            category_totals[cat_name] = {"total": 0.0, "icon": cat_icon}
+        category_totals[cat_name]["total"] += d.price
+
+    top_category = max(category_totals.items(), key=lambda item: item[1]["total"]) if category_totals else None
+
+    return {
+        "month": month,
+        "total_spent": total_spent,
+        "total_count": total_count,
+        "impulsive_count": impulsive_count,
+        "impulsive_percentage": round((impulsive_count / total_count * 100), 1) if total_count > 0 else 0,
+        "highest_purchase": {
+            "description": highest_purchase.description,
+            "price": highest_purchase.price
+        } if highest_purchase else None,
+        "top_category": {
+            "name": top_category[0],
+            "icon": top_category[1]["icon"],
+            "total": top_category[1]["total"],
+            "percentage": round((top_category[1]["total"] / total_spent * 100), 1) if total_spent > 0 else 0
+        } if top_category else None
+    }
 
 @router.post("/", response_model=models.DebtResponse)
 async def create_debt(debt: models.DebtCreate, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):

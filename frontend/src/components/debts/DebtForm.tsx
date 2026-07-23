@@ -1,15 +1,19 @@
-import { useRef, useState } from 'react';
-import { CalendarDays, Plus, Check } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { CalendarDays, Plus, Check, Sparkles, Loader2 } from 'lucide-react';
 import type { Category } from '../../hooks/useCategories';
+import type { Debt } from '../../hooks/useDebts';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAppStore } from '../../store/useAppStore';
+import api from '../../lib/api';
 
 interface DebtFormProps {
   categories: Category[];
   onCreate: (data: any) => Promise<boolean>;
   currentExchangeRate: number | null;
+  selectedMonth?: string;
+  debts?: Debt[];
 }
 
 const debtSchema = z.object({
@@ -27,10 +31,12 @@ const debtSchema = z.object({
 
 type DebtFormValues = z.infer<typeof debtSchema>;
 
-export default function DebtForm({ categories, onCreate, currentExchangeRate }: DebtFormProps) {
+export default function DebtForm({ categories, onCreate, currentExchangeRate, selectedMonth, debts }: DebtFormProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
   const addNotification = useAppStore(state => state.addNotification);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<DebtFormValues>({
     resolver: zodResolver(debtSchema),
@@ -48,22 +54,88 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
     }
   });
 
+  useEffect(() => {
+    if (selectedMonth) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const currentMonthStr = todayStr.slice(0, 7);
+      if (selectedMonth === currentMonthStr) {
+        setValue('purchase_date', todayStr);
+      } else {
+        setValue('purchase_date', `${selectedMonth}-01`);
+      }
+    }
+  }, [selectedMonth, setValue]);
+
+  const getMinDate = () => {
+    if (!selectedMonth) return undefined;
+    return `${selectedMonth}-01`;
+  };
+
+  const getMaxDate = () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (!selectedMonth) return todayStr;
+    const currentMonthStr = todayStr.slice(0, 7);
+    if (selectedMonth === currentMonthStr) return todayStr;
+    const [year, month] = selectedMonth.split('-');
+    const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
+    return `${selectedMonth}-${String(lastDay).padStart(2, '0')}`;
+  };
+
   const paymentType = watch('payment_type');
   const hasInterest = watch('has_interest');
   const currency = watch('currency');
   const isImpulsive = watch('is_impulsive');
   const selectedCategoryId = watch('category_id');
+  const descriptionVal = watch('description');
+  const priceStrVal = watch('priceStr');
 
-  // Comida y Gastos hormiga siempre al frente
-  const sortedCategories = [
-    categories.find(c => c.name === 'Comida'),
-    categories.find(c => c.name === 'Gastos hormiga'),
-    categories.find(c => c.name === 'Transporte'),
-    categories.find(c => c.name === 'Otro'),
-    ...categories.filter(c => !['Comida', 'Gastos hormiga', 'Transporte', 'Otro'].includes(c.name))
-  ].filter(Boolean) as Category[];
+  const isFormComplete = Boolean(
+    selectedCategoryId &&
+    selectedCategoryId >= 1 &&
+    descriptionVal &&
+    descriptionVal.trim() !== '' &&
+    priceStrVal &&
+    priceStrVal.trim() !== '' &&
+    paymentType &&
+    (paymentType as string) !== ''
+  );
 
-  const quickCategories = sortedCategories.slice(0, 4);
+  // 1. Conteo de frecuencia por categoría
+  const categoryCounts = useMemo(() => {
+    const counts: Record<number, number> = {};
+    if (debts) {
+      debts.forEach(d => {
+        if (d.category_id) {
+          counts[d.category_id] = (counts[d.category_id] || 0) + 1;
+        }
+      });
+    }
+    return counts;
+  }, [debts]);
+
+  // 2. Ordenar categorías por popularidad de uso del usuario
+  const sortedCategories = useMemo(() => {
+    return [...categories].sort((a, b) => {
+      const countA = categoryCounts[a.id] || 0;
+      const countB = categoryCounts[b.id] || 0;
+      if (countB !== countA) return countB - countA;
+
+      const priority = ['Comida', 'Gastos hormiga', 'Transporte', 'Otro'];
+      const idxA = priority.indexOf(a.name);
+      const idxB = priority.indexOf(b.name);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [categories, categoryCounts]);
+
+  // Las 4 más populares al frente
+  const quickCategories = useMemo(() => sortedCategories.slice(0, 4), [sortedCategories]);
+
+  // El resto de categorías en el popover (¡CERO DUPLICACIÓN!)
+  const remainingCategories = useMemo(() => sortedCategories.slice(4), [sortedCategories]);
+
   const selectedCategory = categories.find(c => c.id === selectedCategoryId);
 
   const formatWithCommas = (raw: string): string => {
@@ -80,6 +152,65 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue('priceStr', formatWithCommas(e.target.value), { shouldValidate: true });
+  };
+
+  const handleReceiptScan = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsScanning(true);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = async () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 500;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            try {
+              const res = await api.post('/api/ai/scan-receipt', { image_base64: compressedBase64 });
+              if (res.data) {
+                if (res.data.description) setValue('description', res.data.description, { shouldValidate: true });
+                if (res.data.amount) setValue('priceStr', formatWithCommas(res.data.amount.toString()), { shouldValidate: true });
+                if (res.data.suggested_category) {
+                  const matchedCat = categories.find(c => c.name.toLowerCase() === res.data.suggested_category.toLowerCase());
+                  if (matchedCat) setValue('category_id', matchedCat.id, { shouldValidate: true });
+                }
+                addNotification({
+                  title: '✨ Recibo detectado con IA',
+                  message: 'Datos autocompletados correctamente.'
+                });
+              }
+            } catch (err) {
+              addNotification({
+                title: 'Error de escaneo',
+                message: 'No se pudo procesar la imagen del recibo.'
+              });
+            } finally {
+              setIsScanning(false);
+            }
+          }
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const onSubmit = async (values: DebtFormValues) => {
@@ -137,9 +268,21 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
 
   return (
     <div className="rounded-xl border bg-card text-card-foreground shadow-md p-6" data-tour="add-expense">
-      <div className="flex flex-col space-y-1.5 mb-5">
-        <h3 className="font-semibold leading-none tracking-tight">Nueva compra</h3>
-        <p className="text-sm text-muted-foreground">Agrega un nuevo gasto a tu portafolio.</p>
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h3 className="font-semibold leading-none tracking-tight">Nueva compra</h3>
+          <p className="text-sm text-muted-foreground mt-1">Agrega un nuevo gasto a tu portafolio.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => receiptInputRef.current?.click()}
+          disabled={isScanning}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all cursor-pointer shadow-sm"
+        >
+          {isScanning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-primary" />}
+          <span>{isScanning ? 'Escaneando...' : 'Ticket IA'}</span>
+        </button>
+        <input type="file" ref={receiptInputRef} onChange={handleReceiptScan} accept="image/*" className="hidden" />
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
@@ -222,7 +365,7 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
                     </button>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-52 overflow-y-auto p-1">
-                    {sortedCategories.map((cat) => {
+                    {remainingCategories.map((cat) => {
                       const isSelected = selectedCategoryId === cat.id;
                       return (
                         <button
@@ -275,7 +418,8 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
                 }}
                 id="purchase_date" type="date"
                 className={inputClass + " pl-9"}
-                max={new Date().toISOString().split('T')[0]}
+                min={getMinDate()}
+                max={getMaxDate()}
               />
             </div>
             {errors.purchase_date && <p className={errorClass}>{errors.purchase_date.message}</p>}
@@ -409,9 +553,16 @@ export default function DebtForm({ categories, onCreate, currentExchangeRate }: 
           </div>
         )}
 
-        <button type="submit" disabled={!paymentType}
-          className="inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full mt-6 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-          <Plus className="mr-2 h-4 w-4" /> Añadir Compra
+        <button 
+          type="submit" 
+          disabled={!isFormComplete}
+          className={`inline-flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all h-12 px-4 py-2 w-full mt-6 ${
+            isFormComplete
+              ? 'bg-foreground text-background hover:bg-foreground/90 shadow-lg cursor-pointer scale-100'
+              : 'bg-muted text-muted-foreground/50 border border-border/40 cursor-not-allowed opacity-60'
+          }`}
+        >
+          <Plus className="h-4 w-4" /> Añadir Compra
         </button>
       </form>
     </div>

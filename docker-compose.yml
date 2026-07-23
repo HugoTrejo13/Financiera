@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15-alpine
+  postgres:
+    image: postgres:16-alpine
     container_name: financiera_db
-    restart: unless-stopped
+    restart: always
     environment:
       POSTGRES_USER: financiera_user
       POSTGRES_PASSWORD: admin
@@ -13,20 +13,26 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U financiera_user -d financiera_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  api:
-    build: ./backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: financiera_api
-    restart: unless-stopped
+    restart: always
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://financiera_user:admin@db:5432/financiera_db
-      - SECRET_KEY=fall_back_secret
+      DATABASE_URL: postgresql+asyncpg://financiera_user:admin@postgres:5432/financiera_db
+      SECRET_KEY: super_secret_jwt_key_financiera_prod_2026
     depends_on:
-      - db
-    volumes:
-      - ./backend:/app
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:

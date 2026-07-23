@@ -17,9 +17,10 @@ export interface Debt {
   category_id: number | null;
   paid_months: number;
   payment_type: string;
+  is_impulsive?: boolean | null;
 }
 
-export const useDebts = () => {
+export const useDebts = (selectedMonth?: string) => {
   const queryClient = useQueryClient();
 
   const { 
@@ -28,9 +29,11 @@ export const useDebts = () => {
     error: queryError,
     refetch: fetchDebts
   } = useQuery<Debt[]>({
-    queryKey: ['debts'],
+    queryKey: ['debts', selectedMonth],
     queryFn: async () => {
-      const response = await api.get('/api/debts/');
+      const response = await api.get('/api/debts/', {
+        params: selectedMonth ? { month: selectedMonth } : {}
+      });
       return response.data;
     },
   });

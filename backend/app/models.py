@@ -35,6 +35,7 @@ class DebtBase(SQLModel):
     has_interest: Optional[bool] = None
     interest_rate: float = 0.0
     paid_months: int = 0
+    is_impulsive: Optional[bool] = None
     category_id: Optional[int] = Field(default=None, foreign_key="categories.id")
 
 class Debt(DebtBase, table=True):
